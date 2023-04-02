@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author feng 假设这里提供一个随机名字的接口
+ * @author iumyxF 假设这里提供一个随机名字的接口
  * @date 2023/3/30 20:24
  */
 @RestController

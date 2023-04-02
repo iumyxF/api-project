@@ -7,7 +7,6 @@ import java.io.Serializable;
 /**
  * 更新请求
  *
- * @TableName product
  */
 @Data
 public class PostUpdateRequest implements Serializable {

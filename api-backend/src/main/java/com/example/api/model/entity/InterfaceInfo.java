@@ -9,8 +9,7 @@ import java.util.Date;
 /**
  * 接口信息
  *
- * @TableName interface_info
- * @Author feng
+ * @author iumyxF
  */
 @TableName(value = "interface_info")
 @Data

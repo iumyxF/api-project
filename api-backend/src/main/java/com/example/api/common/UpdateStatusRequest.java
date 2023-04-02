@@ -5,12 +5,12 @@ import java.io.Serializable;
 /**
  * 更新状态请求对象
  *
- * @author feng
+ * @author iumyxF
  * @date 2023/3/10 20:36
  */
 public class UpdateStatusRequest implements Serializable {
-    private static final long serialVersionUID = 1L;
 
+    private static final long serialVersionUID = 1L;
     /**
      * id
      */

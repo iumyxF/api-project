@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.api.annotation.AuthCheck;
 import com.example.api.common.*;
 import com.example.api.constant.CommonConstant;
+import com.example.api.constant.SystemConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.example.api.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
@@ -44,10 +45,6 @@ public class InterfaceInfoController {
 
     /**
      * 创建
-     *
-     * @param interfaceInfoAddRequest
-     * @param request
-     * @return
      */
     @PostMapping("/add")
     public BaseResponse<Long> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
@@ -70,10 +67,6 @@ public class InterfaceInfoController {
 
     /**
      * 删除
-     *
-     * @param deleteRequest
-     * @param request
-     * @return
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteInterfaceInfo(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -97,10 +90,6 @@ public class InterfaceInfoController {
 
     /**
      * 更新
-     *
-     * @param interfaceInfoUpdateRequest
-     * @param request
-     * @return
      */
     @PostMapping("/update")
     public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest,
@@ -129,9 +118,6 @@ public class InterfaceInfoController {
 
     /**
      * 根据 id 获取
-     *
-     * @param id
-     * @return
      */
     @GetMapping("/get")
     public BaseResponse<InterfaceInfo> getInterfaceInfoById(long id) {
@@ -144,9 +130,6 @@ public class InterfaceInfoController {
 
     /**
      * 获取列表（仅管理员可使用）
-     *
-     * @param interfaceInfoQueryRequest
-     * @return
      */
     @AuthCheck(mustRole = "admin")
     @GetMapping("/list")
@@ -162,10 +145,6 @@ public class InterfaceInfoController {
 
     /**
      * 分页获取列表
-     *
-     * @param interfaceInfoQueryRequest
-     * @param request
-     * @return
      */
     @GetMapping("/list/page")
     public BaseResponse<Page<InterfaceInfo>> listInterfaceInfoByPage(InterfaceInfoQueryRequest interfaceInfoQueryRequest, HttpServletRequest request) {
@@ -182,7 +161,7 @@ public class InterfaceInfoController {
         // content 需支持模糊搜索
         interfaceInfoQuery.setDescription(null);
         // 限制爬虫
-        if (size > 50) {
+        if (size > SystemConstant.MAX_PAGE_SIZE) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
@@ -246,5 +225,4 @@ public class InterfaceInfoController {
         boolean result = interfaceInfoService.updateById(interfaceInfo);
         return ResultUtils.success(result);
     }
-
 }

@@ -25,7 +25,7 @@ public class ImageUpload {
     private String basePath;
 
     @PostMapping("/upload")
-    public BaseResponse<String> upload(MultipartFile file){
+    public BaseResponse<String> upload(MultipartFile file) {
         //获取与原来文件名
         String filename = file.getOriginalFilename();
         //截取文件结尾格式
@@ -33,16 +33,15 @@ public class ImageUpload {
         //使用uuid组装新文件名
         String random = UUID.randomUUID().toString();
         //将文件转存在设置的地址
-        String newName = random+tail;
-
+        String newName = random + tail;
         //创建一个目录对象
         File dir = new File(basePath);
         //如果文件夹不存在则创建文件夹
-        if (!dir.exists()){
+        if (!dir.exists()) {
             dir.mkdir();
         }
         try {
-            file.transferTo(new File(basePath+newName));
+            file.transferTo(new File(basePath + newName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,19 +49,18 @@ public class ImageUpload {
     }
 
     @GetMapping("/download")
-    public void download(String name , HttpServletResponse response){
+    public void download(String name, HttpServletResponse response) {
         try {
             //输入流读取对象
-            FileInputStream inputStream = new FileInputStream(basePath+name);
+            FileInputStream inputStream = new FileInputStream(basePath + name);
             //输出流写对象
             ServletOutputStream outputStream = response.getOutputStream();
-
             response.setContentType("image/jpeg");
             //输入流读取，输出流写入
             int len = 0;
             byte[] bytes = new byte[1024];
             //这里读取使用的while不是if
-            while ((len = inputStream.read(bytes))!=-1){
+            while ((len = inputStream.read(bytes)) != -1) {
                 outputStream.write(bytes);
                 outputStream.flush();
             }
@@ -71,9 +69,5 @@ public class ImageUpload {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
-
-
 }

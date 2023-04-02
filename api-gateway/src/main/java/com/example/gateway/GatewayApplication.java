@@ -7,7 +7,7 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 
 /**
- * @author feng
+ * @author iumyxF
  * @date 2023/3/30 20:33
  */
 @SpringBootApplication

@@ -11,7 +11,14 @@ import java.util.stream.Collectors;
  */
 public enum PostGenderEnum {
 
+    /**
+     * 男
+     */
     MALE("男", 0),
+
+    /**
+     * 女
+     */
     FEMALE("女", 1);
 
     private final String text;
@@ -26,7 +33,6 @@ public enum PostGenderEnum {
     /**
      * 获取值列表
      *
-     * @return
      */
     public static List<Integer> getValues() {
         return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());

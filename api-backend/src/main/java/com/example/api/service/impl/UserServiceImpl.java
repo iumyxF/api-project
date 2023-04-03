@@ -3,6 +3,7 @@ package com.example.api.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.api.common.ErrorCode;
+import com.example.api.constant.SystemConstant;
 import com.example.api.constant.UserConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.mapper.UserMapper;
@@ -40,10 +41,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
+        if (userAccount.length() < SystemConstant.MIN_ACCOUNT_LENGTH) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
         }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
+        if (userPassword.length() < SystemConstant.MIN_PASSWORD_LENGTH || checkPassword.length() < SystemConstant.MIN_PASSWORD_LENGTH) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
         }
         // 密码和校验密码相同
@@ -78,10 +79,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
+        if (userAccount.length() < SystemConstant.MIN_ACCOUNT_LENGTH) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
         }
-        if (userPassword.length() < 8) {
+        if (userPassword.length() < SystemConstant.MIN_PASSWORD_LENGTH) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
         }
         // 2. 加密
@@ -104,8 +105,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 获取当前登录用户
      *
-     * @param request
-     * @return
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {
@@ -127,8 +126,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 是否为管理员
      *
-     * @param request
-     * @return
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
@@ -141,7 +138,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 用户注销
      *
-     * @param request
      */
     @Override
     public boolean userLogout(HttpServletRequest request) {

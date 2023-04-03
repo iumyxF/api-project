@@ -2,6 +2,7 @@ package com.example.api.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.api.common.ErrorCode;
+import com.example.api.constant.SystemConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.mapper.PostMapper;
 import com.example.api.model.entity.Post;
@@ -38,13 +39,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
             }
         }
-        if (StringUtils.isNotBlank(content) && content.length() > 8192) {
+        if (StringUtils.isNotBlank(content) && content.length() > SystemConstant.MAX_CONTENT_SIZE) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "内容过长");
         }
         if (reviewStatus != null && !PostReviewStatusEnum.getValues().contains(reviewStatus)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        if (age != null && (age < 18 || age > 100)) {
+        if (age != null && (age < SystemConstant.MIN_AGE || age > SystemConstant.MAX_AGE)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "年龄不符合要求");
         }
         if (gender != null && !PostGenderEnum.getValues().contains(gender)) {

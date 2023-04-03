@@ -8,6 +8,7 @@ import com.example.api.common.DeleteRequest;
 import com.example.api.common.ErrorCode;
 import com.example.api.common.ResultUtils;
 import com.example.api.constant.CommonConstant;
+import com.example.api.constant.SystemConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.model.dto.post.PostAddRequest;
 import com.example.api.model.dto.post.PostQueryRequest;
@@ -46,9 +47,6 @@ public class PostController {
     /**
      * 创建
      *
-     * @param postAddRequest
-     * @param request
-     * @return
      */
     @PostMapping("/add")
     public BaseResponse<Long> addPost(@RequestBody PostAddRequest postAddRequest, HttpServletRequest request) {
@@ -72,9 +70,6 @@ public class PostController {
     /**
      * 删除
      *
-     * @param deleteRequest
-     * @param request
-     * @return
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deletePost(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -99,9 +94,6 @@ public class PostController {
     /**
      * 更新
      *
-     * @param postUpdateRequest
-     * @param request
-     * @return
      */
     @PostMapping("/update")
     public BaseResponse<Boolean> updatePost(@RequestBody PostUpdateRequest postUpdateRequest,
@@ -131,8 +123,6 @@ public class PostController {
     /**
      * 根据 id 获取
      *
-     * @param id
-     * @return
      */
     @GetMapping("/get")
     public BaseResponse<Post> getPostById(long id) {
@@ -146,8 +136,6 @@ public class PostController {
     /**
      * 获取列表（仅管理员可使用）
      *
-     * @param postQueryRequest
-     * @return
      */
     @AuthCheck(mustRole = "admin")
     @GetMapping("/list")
@@ -164,9 +152,6 @@ public class PostController {
     /**
      * 分页获取列表
      *
-     * @param postQueryRequest
-     * @param request
-     * @return
      */
     @GetMapping("/list/page")
     public BaseResponse<Page<Post>> listPostByPage(PostQueryRequest postQueryRequest, HttpServletRequest request) {
@@ -183,7 +168,7 @@ public class PostController {
         // content 需支持模糊搜索
         postQuery.setContent(null);
         // 限制爬虫
-        if (size > 50) {
+        if (size > SystemConstant.MAX_PAGE_SIZE) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>(postQuery);

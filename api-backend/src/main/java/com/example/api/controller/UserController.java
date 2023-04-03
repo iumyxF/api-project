@@ -38,8 +38,6 @@ public class UserController {
     /**
      * 用户注册
      *
-     * @param userRegisterRequest
-     * @return
      */
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -59,9 +57,6 @@ public class UserController {
     /**
      * 用户登录
      *
-     * @param userLoginRequest
-     * @param request
-     * @return
      */
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
@@ -80,8 +75,6 @@ public class UserController {
     /**
      * 用户注销
      *
-     * @param request
-     * @return
      */
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
@@ -95,8 +88,6 @@ public class UserController {
     /**
      * 获取当前登录用户
      *
-     * @param request
-     * @return
      */
     @GetMapping("/get/login")
     public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
@@ -113,9 +104,6 @@ public class UserController {
     /**
      * 创建用户
      *
-     * @param userAddRequest
-     * @param request
-     * @return
      */
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
@@ -134,9 +122,6 @@ public class UserController {
     /**
      * 删除用户
      *
-     * @param deleteRequest
-     * @param request
-     * @return
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -150,9 +135,6 @@ public class UserController {
     /**
      * 更新用户
      *
-     * @param userUpdateRequest
-     * @param request
-     * @return
      */
     @PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
@@ -168,9 +150,6 @@ public class UserController {
     /**
      * 根据 id 获取用户
      *
-     * @param id
-     * @param request
-     * @return
      */
     @GetMapping("/get")
     public BaseResponse<UserVO> getUserById(int id, HttpServletRequest request) {
@@ -186,9 +165,6 @@ public class UserController {
     /**
      * 获取用户列表
      *
-     * @param userQueryRequest
-     * @param request
-     * @return
      */
     @GetMapping("/list")
     public BaseResponse<List<UserVO>> listUser(UserQueryRequest userQueryRequest, HttpServletRequest request) {
@@ -209,9 +185,6 @@ public class UserController {
     /**
      * 分页获取用户列表
      *
-     * @param userQueryRequest
-     * @param request
-     * @return
      */
     @GetMapping("/list/page")
     public BaseResponse<Page<UserVO>> listUserByPage(UserQueryRequest userQueryRequest, HttpServletRequest request) {
@@ -225,14 +198,14 @@ public class UserController {
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>(userQuery);
         Page<User> userPage = userService.page(new Page<>(current, size), queryWrapper);
-        Page<UserVO> userVOPage = new PageDTO<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
+        Page<UserVO> userVoPage = new PageDTO<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
         List<UserVO> userVOList = userPage.getRecords().stream().map(user -> {
             UserVO userVO = new UserVO();
             BeanUtils.copyProperties(user, userVO);
             return userVO;
         }).collect(Collectors.toList());
-        userVOPage.setRecords(userVOList);
-        return ResultUtils.success(userVOPage);
+        userVoPage.setRecords(userVOList);
+        return ResultUtils.success(userVoPage);
     }
 
     // endregion

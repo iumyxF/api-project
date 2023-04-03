@@ -2,6 +2,7 @@ package com.example.api.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.api.common.ErrorCode;
+import com.example.api.constant.SystemConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.mapper.InterfaceInfoMapper;
 import com.example.api.model.entity.InterfaceInfo;
@@ -19,8 +20,6 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
 
     /**
      * interfaceInfo 参数校验
-     * @param interfaceInfo
-     * @param add
      */
     @Override
     public void validInterfaceInfo(InterfaceInfo interfaceInfo, boolean add) {
@@ -37,7 +36,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
                 throw new BusinessException(ErrorCode.PARAMS_ERROR);
             }
         }
-        if (StringUtils.isNotBlank(name) && name.length() < 50) {
+        if (StringUtils.isNotBlank(name) && name.length() < SystemConstant.MAX_PAGE_SIZE) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "内容过长");
         }
     }

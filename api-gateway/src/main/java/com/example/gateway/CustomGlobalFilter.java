@@ -8,21 +8,24 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author iumyxF
@@ -33,148 +36,152 @@ import java.util.Set;
 @Component
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
-    private static final Set<String> white_list = Collections.singleton("127.0.0.1");
+    private static final Set<String> WHITE_LIST = Collections.singleton("127.0.0.1");
+
+    private final String FILE_UPLOAD_CONTENT_TYPE = "multipart/form-data";
 
     /**
-     * 全局路由拦截器，具体的业务逻辑处理
+     * 全局过滤器中需要进行的操作
+     * 1. 请求日志处理
+     * 2. 黑白名单
+     * 3. 参数校验
+     * 3.1 ak、sk合法性
+     * 3.2 nonce 是否重复（15分钟内是否重复访问）
+     * 3.3 timestamp 是否在合法的访问时间内（暂·定5分钟内有效）
+     * 3.4 签名校验（将参数进行加密对比）
+     * 4. 模拟接口是否存在
+     * 5. 请求转发，调用模拟接口
+     * 6. 处理响应日志
+     * 7. 根据响应日志（成功/失败），修改接口调用次数（加1/不变）
+     *
+     * @param exchange the current server exchange
+     * @param chain    provides a way to delegate to the next filter
+     * @return result
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        //1.用户发送请求到AIP网关
-        //2.请求日志
+        //获取请求
         ServerHttpRequest request = exchange.getRequest();
-        log.info("请求唯一标识:" + request.getId());
-        log.info("请求路径:" + request.getPath().value());
-        log.info("请求方法:" + request.getMethod().toString());
-        log.info("请求参数:" + request.getQueryParams());
+        //获取响应
+        ServerHttpResponse originalResponse = exchange.getResponse();
+        URI uri = request.getURI();
+        String path = request.getPath().value();
+        String method = request.getMethodValue();
+        HttpHeaders header = request.getHeaders();
         String host = request.getLocalAddress().getHostString();
-        log.info("请求来源:" + host);
-        //3.黑白名单
-        //获取响应对象
-        ServerHttpResponse response = exchange.getResponse();
-        if (!white_list.contains(host)) {
-            handlerNoAuth(response);
+        String requestParams = String.valueOf(request.getQueryParams());
+        AtomicReference<String> requestBody = new AtomicReference<>("");
+        //1. 请求日志处理
+        log.info("***********************************请求信息**********************************");
+        log.info("URI = {}", uri);
+        log.info("method = {}", method);
+        log.info("path = {}", path);
+        log.info("header = {}", header);
+        log.info("requestParams = {}", requestParams);
+
+        //2. 黑白名单
+        if (!WHITE_LIST.contains(host)) {
+            return handlerNoAuth(originalResponse);
         }
-        //4.鉴权（判断ak,sk是否合法）
-        //获取请求头中的参数
-        HttpHeaders headers = request.getHeaders();
-        String accessKey = headers.getFirst("accessKey");
-        String nonce = headers.getFirst("nonce");
-        String timestamp = headers.getFirst("timestamp");
-        String sign = headers.getFirst("sign");
-        String body = headers.getFirst("body");
-        //todo 判断该用户是否被分配accessKey了，要去数据库中查询
-        if (!accessKey.contains("test")) {
-            //
-            return handlerNoAuth(response);
-        }
-        //校验下随机数是否合法
-        if (Long.parseLong(nonce) > 10000) {
-            //
-            return handlerNoAuth(response);
-        }
-        //时间判断不超过5分钟
-        long currentTime = System.currentTimeMillis() / 1000;
-        Long FIVE_MINUTES = 60 * 5L;
-        if ((currentTime - Long.parseLong(timestamp)) >= FIVE_MINUTES) {
-            return handlerNoAuth(response);
-        }
-        //todo 校验密钥 通过provider-starter校验
 
-
-        //5.请求的模拟接口是否存在
-        //todo 从数据库中查询interface_info中是否存在该接口（远程调用api-backend，http or rpc）
-
-        //6.请求转发，调用模拟接口
-
-        // 解决方案 应该使用内置的装饰者模式 ,https://blog.csdn.net/qq_19636353/article/details/126759522
-        //7.处理响应
-        //return handlerResponse(exchange, chain);
-
-        //其他
-        return chain.filter(exchange).then(Mono.fromRunnable(()->{
-
-        }));
-    }
-
-    /**
-     * 难点 需要理解一下
-     */
-    public Mono<Void> handlerResponse(ServerWebExchange exchange, GatewayFilterChain chain) {
-        try {
-            //获取原response
-            ServerHttpResponse originalResponse = exchange.getResponse();
-            //获取缓冲区工厂
-            DataBufferFactory bufferFactory = originalResponse.bufferFactory();
-            //获取响应码
-            HttpStatus statusCode = originalResponse.getStatusCode();
-
-            if (statusCode == HttpStatus.OK) {
-                //装饰response
-                ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
-                    /**
-                     * 调用接口完毕后执行的方法
-                     */
-                    @Override
-                    public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                        log.info("body instanceof Flux: {}", (body instanceof Flux));
-
-                        if (body instanceof Flux) {
-                            Flux<? extends DataBuffer> fluxBody = Flux.from(body);
-                            //向response中写入数据，构造数据拼接字符串
-                            return super.writeWith(fluxBody.map(dataBuffer -> {
-                                byte[] content = new byte[dataBuffer.readableByteCount()];
-                                dataBuffer.read(content);
-                                DataBufferUtils.release(dataBuffer);//释放掉内存
-                                // 构建日志
-                                StringBuilder sb2 = new StringBuilder(200);
-                                sb2.append("<--- {} {} \n");
-                                List<Object> rspArgs = new ArrayList<>();
-                                rspArgs.add(originalResponse.getStatusCode());
-                                //rspArgs.add(requestUrl);
-                                String data = new String(content, StandardCharsets.UTF_8);//data
-                                sb2.append(data);
-                                // data 就是接口返回值
-
-                                //todo 8.调用成功，接口调用次数+1 远程调用
-
-
-                                //9.调用失败，返回一个错误码
-                                //log.info("custom global filter");
-                                //if (response.getStatusCode() != HttpStatus.OK) {
-                                //    return handlerInvokeError(response);
-                                //}
-
-                                log.info(sb2.toString(), rspArgs.toArray());//log.info("<-- {} {}\n", originalResponse.getStatusCode(), data);
-                                return bufferFactory.wrap(content);
-                            }));
-                        } else {
-                            log.error("<--- {} 响应code异常", getStatusCode());
-                        }
-                        return super.writeWith(body);
-                    }
-                };
-
-                // 设置response对象为装饰过的
-                return chain.filter(exchange.mutate().response(decoratedResponse).build());
-            }
-            return chain.filter(exchange);//降级处理返回数据
-        } catch (Exception e) {
-            log.error("gateway log exception.\n" + e);
+        // 如果缺少请求类型或者是文件上传类型的请求，直接放行
+        String contentType = header.getFirst("content-type");
+        if (StringUtils.hasLength(contentType) && contentType.contains(FILE_UPLOAD_CONTENT_TYPE)) {
             return chain.filter(exchange);
         }
+
+        // response，调用目标接口后获取的返回内容
+        DataBufferFactory bufferFactory = exchange.getResponse().bufferFactory();
+        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
+            @Override
+            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                Flux<? extends DataBuffer> fluxBody = Flux.from(body);
+                body = fluxBody.buffer().map(dataBuffers -> {
+                    DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+                    DataBuffer join = dataBufferFactory.join(dataBuffers);
+                    byte[] content = new byte[join.readableByteCount()];
+                    join.read(content);
+                    String responseData = new String(content, StandardCharsets.UTF_8);
+                    //6. 处理响应日志
+                    log.info("***********************************响应信息**********************************");
+                    //TODO 7. 根据响应日志（成功/失败），修改接口调用次数（加1/不变）
+                    // 根据BaseResponse来判断调用成功or失败
+
+                    log.info("响应内容:{}", responseData);
+                    log.info("****************************************************************************\n");
+                    DataBufferUtils.release(join);
+
+                    //TODO 优化 使用@Ansync异步方法日志入库
+                    //修改返回内容，返回内容是JSON字符串，因此需要把JSON转成具体的对象再处理。
+                    //R r = om.readValue(responseData, R.class);//R是统一泛型返回对象，这里因人而已，不具体介绍。
+                    //String newContent = om.writeValueAsString(r);
+                    //return bufferFactory.wrap(newContent.getBytes());
+                    return bufferFactory.wrap(content);
+                });
+                return super.writeWith(body);
+            }
+        };
+        log.info("****************************************************************************\n");
+
+        // 获取body，虽然该方法在后面，但是实际效果是在response前面
+        // Content-Length 是一个实体消息首部，用来指明发送给接收方的消息主体的大小1。
+        // 对于 GET 请求，由于没有请求体，所以 Content-Length 通常为 -1。
+        // 而对于 POST 请求，由于有请求体，所以 Content-Length 会大于0。
+        if (header.getContentLength() > 0) {
+            return DataBufferUtils.join(exchange.getRequest().getBody()).flatMap(dataBuffer -> {
+                byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                dataBuffer.read(bytes);
+                String bodyString = new String(bytes, StandardCharsets.UTF_8);
+                //设置requestBody到变量，让response获取
+                requestBody.set(bodyString);
+                log.info("requestBody = {}", bodyString);
+                //3.鉴权
+                boolean authed = AuthenticationUtils.authenticationPostRequest(bodyString);
+                if (!authed) {
+                    return handlerNoAuth(originalResponse);
+                }
+                //TODO 4.接口是否存在，后期使用RPC调用
+
+                exchange.getAttributes().put("POST_BODY", bodyString);
+                DataBufferUtils.release(dataBuffer);
+                Flux<DataBuffer> cachedFlux = Flux.defer(() -> Mono.just(exchange.getResponse().bufferFactory().wrap(bytes)));
+
+                ServerHttpRequest mutatedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
+                    @Override
+                    public Flux<DataBuffer> getBody() {
+                        return cachedFlux;
+                    }
+                };
+                return chain.filter(exchange.mutate().request(mutatedRequest).response(decoratedResponse).build());
+            });
+        }
+
+        //没有获取BODY，不用处理request
+        return chain.filter(exchange.mutate().response(decoratedResponse).build());
     }
 
     @Override
     public int getOrder() {
-        return -1;
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
+    /**
+     * 无权限访问处理
+     *
+     * @param response 响应体
+     * @return 无权限访问响应结果
+     */
     private Mono<Void> handlerNoAuth(ServerHttpResponse response) {
         response.setStatusCode(HttpStatus.FORBIDDEN);
         return response.setComplete();
     }
 
+    /**
+     * 调用失败处理
+     *
+     * @param response 响应体
+     * @return 调用失败响应结果
+     */
     private Mono<Void> handlerInvokeError(ServerHttpResponse response) {
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         return response.setComplete();

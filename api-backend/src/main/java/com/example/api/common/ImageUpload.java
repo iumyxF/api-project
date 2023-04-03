@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * @author: iumyxF
+ * {@code @author:} iumyxF
  **/
 @RestController
 @RequestMapping("/image")

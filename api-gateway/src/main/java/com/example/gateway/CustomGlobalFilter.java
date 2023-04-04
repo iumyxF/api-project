@@ -1,6 +1,8 @@
 package com.example.gateway;
 
+import com.example.api.common.service.DemoService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -40,6 +42,9 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     private final String FILE_UPLOAD_CONTENT_TYPE = "multipart/form-data";
 
+    @DubboReference
+    private DemoService demoService;
+
     /**
      * 全局过滤器中需要进行的操作
      * 1. 请求日志处理
@@ -60,6 +65,8 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String hello = demoService.sayHello("GateWay");
+        log.info("dubbo 测试返回:{}", hello);
         //获取请求
         ServerHttpRequest request = exchange.getRequest();
         //获取响应

@@ -17,3 +17,12 @@ logging:
       springframework:
         cloud:
           gateway: trace
+
+dubbo:
+  application:
+    name: api-gateway
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: zookeeper://${zookeeper.address:127.0.0.1}:2181

@@ -13,6 +13,7 @@
         <module>api-backend</module>
         <module>api-gateway</module>
         <module>api-provider</module>
+        <module>api-common</module>
     </modules>
 
     <properties>
@@ -21,11 +22,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>2.7.10</spring-boot.version>
         <spring-cloud.version>2021.0.6</spring-cloud.version>
+        <dubbo.version>3.2.0-beta.4</dubbo.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <knife4j.version>3.0.3</knife4j.version>
         <mybatis-plus.version>3.5.3</mybatis-plus.version>
         <hutool.version>5.8.15</hutool.version>
-        <junit.version>4.13.2</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <dependencyManagement>
@@ -38,6 +40,20 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!--dubbo-->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-bom</artifactId>
+                <version>${dubbo.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-dependencies-zookeeper-curator5</artifactId>
+                <version>${dubbo.version}</version>
+                <type>pom</type>
+            </dependency>
             <!--spring-cloud-dependencies-->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
@@ -45,6 +61,25 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+                <exclusions>
+                    <!--排除zk相关的依赖-->
+                    <exclusion>
+                        <groupId>org.apache.curator</groupId>
+                        <artifactId>curator-recipes</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.curator</groupId>
+                        <artifactId>curator-framework</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.curator</groupId>
+                        <artifactId>curator-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.curator</groupId>
+                        <artifactId>curator-x-discovery</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!--commons-lang3-->
             <dependency>
@@ -52,21 +87,25 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
+            <!--knife4j-->
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>knife4j-spring-boot-starter</artifactId>
                 <version>${knife4j.version}</version>
             </dependency>
+            <!--mybatis-->
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
+            <!--hutool-->
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool.version}</version>
             </dependency>
+            <!--junit-->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -81,6 +120,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <excludes>
                         <exclude>

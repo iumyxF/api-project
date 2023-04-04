@@ -30,3 +30,16 @@ timestamp + nonce
 
 ### 注意事项
 - 区分get/post的请求，获取参数的方式不同
+
+# Dubbo的使用
+1. 依赖于springboot进行开发
+2. 使用IDL和Triple协议进行开发（后期使用）
+
+## 相关配置
+- dubbo version 3.2.0-beta.4
+- zookeeper version windows 3.7.1
+
+## 流程
+- 注册中心：暂时使用内嵌zookeeper
+- 服务提供者：api-backend
+- 服务消费者：api-gateway

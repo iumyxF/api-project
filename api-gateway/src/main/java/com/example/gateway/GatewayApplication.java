@@ -1,5 +1,6 @@
 package com.example.gateway;
 
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
  * @author iumyxF
  * @date 2023/3/30 20:33
  */
+@EnableDubbo
 @SpringBootApplication
 public class GatewayApplication {
 

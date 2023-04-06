@@ -1,6 +1,8 @@
 package com.example.gateway;
 
+import com.example.api.common.model.entity.InterfaceInfo;
 import com.example.api.common.service.DemoService;
+import com.example.api.common.service.InnerInterfaceInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
@@ -46,6 +48,9 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     @DubboReference
     private DemoService demoService;
+
+    @DubboReference
+    private InnerInterfaceInfoService innerInterfaceInfoService;
 
     /**
      * 全局过滤器中需要进行的操作
@@ -150,6 +155,10 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                     return handlerNoAuth(originalResponse);
                 }
                 //TODO 4.接口是否存在，后期使用RPC调用
+                InterfaceInfo interfaceInfo = innerInterfaceInfoService.selectInterfaceInfo(path, method);
+                if (null == interfaceInfo) {
+                    return handlerInvokeError(originalResponse);
+                }
 
                 exchange.getAttributes().put("POST_BODY", bodyString);
                 DataBufferUtils.release(dataBuffer);
@@ -169,6 +178,11 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         boolean authed = AuthenticationUtils.authenticationGetRequest(request.getQueryParams());
         if (!authed) {
             return handlerNoAuth(originalResponse);
+        }
+        // 4.检查接口是否存在
+        InterfaceInfo interfaceInfo = innerInterfaceInfoService.selectInterfaceInfo(path, method);
+        if (null == interfaceInfo) {
+            return handlerInvokeError(originalResponse);
         }
         //没有获取BODY，不用处理request
         return chain.filter(exchange.mutate().response(decoratedResponse).build());

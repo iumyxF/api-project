@@ -3,8 +3,8 @@ package com.example.api.aop;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.example.api.annotation.AuthCheck;
 import com.example.api.common.ErrorCode;
+import com.example.api.common.model.entity.User;
 import com.example.api.exception.BusinessException;
-import com.example.api.model.entity.User;
 import com.example.api.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 
 /**
  * 权限校验 AOP

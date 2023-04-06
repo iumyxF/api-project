@@ -1,4 +1,4 @@
-package com.example.api.dubbo;
+package com.example.api.provider;
 
 import com.example.api.common.service.DemoService;
 import org.apache.dubbo.config.annotation.DubboService;

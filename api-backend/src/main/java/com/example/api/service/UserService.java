@@ -1,7 +1,8 @@
 package com.example.api.service;
 
+
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.api.model.entity.User;
+import com.example.api.common.model.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
 

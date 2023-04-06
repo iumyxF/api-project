@@ -2,10 +2,10 @@ package com.example.api.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.api.common.ErrorCode;
+import com.example.api.common.model.entity.Post;
 import com.example.api.constant.SystemConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.mapper.PostMapper;
-import com.example.api.model.entity.Post;
 import com.example.api.model.enums.PostGenderEnum;
 import com.example.api.model.enums.PostReviewStatusEnum;
 import com.example.api.service.PostService;

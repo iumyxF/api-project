@@ -1,4 +1,5 @@
-package com.example.api.model.entity;
+package com.example.api.common.model.entity;
+
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -34,6 +35,12 @@ public class InterfaceInfo implements Serializable {
      * 接口地址
      */
     private String url;
+
+    /**
+     * 请求参数
+     * [ {"name": "username", "type": "string"} ]
+     */
+    private String requestParams;
 
     /**
      * 请求头

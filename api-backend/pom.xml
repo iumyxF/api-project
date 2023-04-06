@@ -8,12 +8,18 @@
         <groupId>com.example.api</groupId>
         <artifactId>api-project</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>api-backend</artifactId>
 
     <dependencies>
+        <!--dubbo common-->
+        <dependency>
+            <groupId>com.example.api</groupId>
+            <artifactId>api-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <!--spring boot web-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -51,12 +57,6 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!--dubbo common-->
-        <dependency>
-            <groupId>com.example.api</groupId>
-            <artifactId>api-common</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <!--commons-lang3-->
         <dependency>

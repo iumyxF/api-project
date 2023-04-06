@@ -1,4 +1,4 @@
-package com.example.api.model.vo;
+package com.example.api.common.model.vo;
 
 import com.example.api.common.model.entity.Post;
 import lombok.Data;

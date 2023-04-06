@@ -2,7 +2,7 @@ package com.example.api.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.api.model.entity.Post;
+import com.example.api.common.model.entity.Post;
 
 /**
  * @author iumyxFli

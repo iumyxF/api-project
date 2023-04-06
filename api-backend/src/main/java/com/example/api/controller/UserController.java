@@ -7,9 +7,9 @@ import com.example.api.common.BaseResponse;
 import com.example.api.common.DeleteRequest;
 import com.example.api.common.ErrorCode;
 import com.example.api.common.ResultUtils;
+import com.example.api.common.model.entity.User;
 import com.example.api.exception.BusinessException;
 import com.example.api.model.dto.user.*;
-import com.example.api.model.entity.User;
 import com.example.api.model.vo.UserVO;
 import com.example.api.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +37,6 @@ public class UserController {
 
     /**
      * 用户注册
-     *
      */
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -56,7 +55,6 @@ public class UserController {
 
     /**
      * 用户登录
-     *
      */
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
@@ -74,7 +72,6 @@ public class UserController {
 
     /**
      * 用户注销
-     *
      */
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
@@ -87,7 +84,6 @@ public class UserController {
 
     /**
      * 获取当前登录用户
-     *
      */
     @GetMapping("/get/login")
     public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
@@ -103,7 +99,6 @@ public class UserController {
 
     /**
      * 创建用户
-     *
      */
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
@@ -121,7 +116,6 @@ public class UserController {
 
     /**
      * 删除用户
-     *
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -134,7 +128,6 @@ public class UserController {
 
     /**
      * 更新用户
-     *
      */
     @PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
@@ -149,7 +142,6 @@ public class UserController {
 
     /**
      * 根据 id 获取用户
-     *
      */
     @GetMapping("/get")
     public BaseResponse<UserVO> getUserById(int id, HttpServletRequest request) {
@@ -164,7 +156,6 @@ public class UserController {
 
     /**
      * 获取用户列表
-     *
      */
     @GetMapping("/list")
     public BaseResponse<List<UserVO>> listUser(UserQueryRequest userQueryRequest, HttpServletRequest request) {
@@ -184,7 +175,6 @@ public class UserController {
 
     /**
      * 分页获取用户列表
-     *
      */
     @GetMapping("/list/page")
     public BaseResponse<Page<UserVO>> listUserByPage(UserQueryRequest userQueryRequest, HttpServletRequest request) {

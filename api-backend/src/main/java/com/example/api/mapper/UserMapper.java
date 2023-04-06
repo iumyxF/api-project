@@ -2,7 +2,7 @@ package com.example.api.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.api.model.entity.User;
+import com.example.api.common.model.entity.User;
 
 /**
  * @author iumyxF

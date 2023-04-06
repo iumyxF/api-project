@@ -13,6 +13,12 @@
     <artifactId>api-gateway</artifactId>
 
     <dependencies>
+        <!--dubbo common-->
+        <dependency>
+            <groupId>com.example.api</groupId>
+            <artifactId>api-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <!-- dubbo -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -28,12 +34,6 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!--dubbo common-->
-        <dependency>
-            <groupId>com.example.api</groupId>
-            <artifactId>api-common</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <!--spring-->
         <dependency>

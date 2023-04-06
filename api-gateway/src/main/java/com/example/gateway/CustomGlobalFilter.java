@@ -23,9 +23,11 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -65,8 +67,6 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String hello = demoService.sayHello("GateWay");
-        log.info("dubbo 测试返回:{}", hello);
         //获取请求
         ServerHttpRequest request = exchange.getRequest();
         //获取响应
@@ -75,7 +75,9 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         String path = request.getPath().value();
         String method = request.getMethodValue();
         HttpHeaders header = request.getHeaders();
-        String host = request.getLocalAddress().getHostString();
+        String host = Optional.ofNullable(request.getLocalAddress())
+                .map(InetSocketAddress::getHostString)
+                .orElse("");
         String requestParams = String.valueOf(request.getQueryParams());
         AtomicReference<String> requestBody = new AtomicReference<>("");
         //1. 请求日志处理
@@ -163,6 +165,11 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             });
         }
 
+        //校验GET 参数合法性
+        boolean authed = AuthenticationUtils.authenticationGetRequest(request.getQueryParams());
+        if (!authed) {
+            return handlerNoAuth(originalResponse);
+        }
         //没有获取BODY，不用处理request
         return chain.filter(exchange.mutate().response(decoratedResponse).build());
     }

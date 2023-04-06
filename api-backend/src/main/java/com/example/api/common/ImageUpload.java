@@ -29,7 +29,10 @@ public class ImageUpload {
         //获取与原来文件名
         String filename = file.getOriginalFilename();
         //截取文件结尾格式
-        String tail = filename.substring(filename.lastIndexOf("."));
+        String tail = null;
+        if (filename != null) {
+            tail = filename.substring(filename.lastIndexOf("."));
+        }
         //使用uuid组装新文件名
         String random = UUID.randomUUID().toString();
         //将文件转存在设置的地址

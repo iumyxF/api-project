@@ -1,5 +1,6 @@
 package com.example.api.common.service;
 
+import com.example.api.common.model.InnerResult;
 import com.example.api.common.model.entity.InterfaceInfo;
 
 /**
@@ -16,5 +17,5 @@ public interface InnerInterfaceInfoService {
      * @param method 请求方式
      * @return 接口对象
      */
-    InterfaceInfo selectInterfaceInfo(String url, String method);
+    InnerResult<InterfaceInfo> selectInterfaceInfo(String url, String method);
 }

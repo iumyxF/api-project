@@ -47,6 +47,24 @@ timestamp + nonce
 - zookeeper version windows 3.7.1
 
 ## 流程
-- 注册中心：暂时使用内嵌zookeeper
+- 注册中心：zookeeper 下载链接(windows) https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
 - 服务提供者：api-backend
 - 服务消费者：api-gateway
+
+
+## 接口调用流程
+- api-backend 提供一个接口调用接口("/invoke")
+  - 判断接口是否存在
+  - 判断接口状态、用户是否有权限、剩余次数
+  - 使用client进行调用远程接口
+- api-sdk 提供封装参数功能（类似工具类）
+  - 根据签名规则生成sign
+  - 请求gateway
+- api-gateway
+  - 记录日志、黑白名单、
+  - 校验ak、sk合法性（dubbo）（sdk封装进行校验规则）
+  - 根据ak获取当前用户id，根据method和url获取接口id
+  - 根据配置的路由，请求转发
+  - 判断调用是否成功，次数+1
+- api-provider
+  - 提供接口数据

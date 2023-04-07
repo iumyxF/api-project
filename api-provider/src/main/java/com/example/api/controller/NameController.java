@@ -1,5 +1,7 @@
 package com.example.api.controller;
 
+import com.example.api.model.BaseResponse;
+import com.example.api.model.ResultUtils;
 import com.example.api.model.entity.User;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,14 +16,14 @@ import javax.servlet.http.HttpServletRequest;
 public class NameController {
 
     @GetMapping("/get")
-    public String getName(String name, HttpServletRequest request) {
-        System.out.println(request.getHeader("test"));
-        return "GET name = " + name;
+    public BaseResponse<String> getName(String name, HttpServletRequest request) {
+        String result = "GET name = " + name;
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/post")
-    public String postName(@RequestParam String name) {
-        return "POST name = " + name;
+    public BaseResponse<String> postName(@RequestParam String name) {
+        return ResultUtils.success("POST name = " + name);
     }
 
     @PostMapping("/enitiy")

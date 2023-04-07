@@ -1,8 +1,12 @@
 package com.example.gateway;
 
+import com.example.api.common.model.InnerResult;
 import com.example.api.common.model.entity.InterfaceInfo;
 import com.example.api.common.service.DemoService;
 import com.example.api.common.service.InnerInterfaceInfoService;
+import com.example.api.common.service.InnerUserInterfaceInfoService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
@@ -19,12 +23,12 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -39,18 +43,24 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 
 @Slf4j
-@Component
+//@Component
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
     private static final Set<String> WHITE_LIST = Collections.singleton("127.0.0.1");
 
     private final String FILE_UPLOAD_CONTENT_TYPE = "multipart/form-data";
 
+    @Resource
+    private ObjectMapper objectMapper;
+
     @DubboReference
     private DemoService demoService;
 
     @DubboReference
     private InnerInterfaceInfoService innerInterfaceInfoService;
+
+    @DubboReference
+    private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
 
     /**
      * 全局过滤器中需要进行的操作
@@ -61,7 +71,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
      * 3.2 nonce 是否重复（15分钟内是否重复访问）
      * 3.3 timestamp 是否在合法的访问时间内（暂·定5分钟内有效）
      * 3.4 签名校验（将参数进行加密对比）
-     * 4. 模拟接口是否存在
+     * 4. 模拟接口是否存在(并不是直接调用目标接口) 不需要在这里判断了
      * 5. 请求转发，调用模拟接口
      * 6. 处理响应日志
      * 7. 根据响应日志（成功/失败），修改接口调用次数（加1/不变）
@@ -104,7 +114,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // response，调用目标接口后获取的返回内容
+        // response 调用目标接口后获取的返回内容
         DataBufferFactory bufferFactory = exchange.getResponse().bufferFactory();
         ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
             @Override
@@ -118,10 +128,17 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                     String responseData = new String(content, StandardCharsets.UTF_8);
                     //6. 处理响应日志
                     log.info("***********************************响应信息**********************************");
-                    //TODO 7. 根据响应日志（成功/失败），修改接口调用次数（加1/不变）
-                    // 根据BaseResponse来判断调用成功or失败
-
-                    log.info("响应内容:{}", responseData);
+                    try {
+                        // 7. 根据响应日志（成功/失败）
+                        InnerResult innerResult = objectMapper.readValue(responseData, InnerResult.class);
+                        if (HttpStatus.OK.value() == innerResult.getCode()) {
+                            log.info("接口调用成功,响应信息:{}", innerResult);
+                            //TODO 接口调用次数（加1/不变） 怎么获取接口id和用户id？
+                            //innerUserInterfaceInfoService.incrementInterfaceCallCount();
+                        }
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
                     log.info("****************************************************************************\n");
                     DataBufferUtils.release(join);
 
@@ -137,10 +154,13 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         };
         log.info("****************************************************************************\n");
 
-        // 获取body，虽然该方法在后面，但是实际效果是在response前面
-        // Content-Length 是一个实体消息首部，用来指明发送给接收方的消息主体的大小1。
-        // 对于 GET 请求，由于没有请求体，所以 Content-Length 通常为 -1。
-        // 而对于 POST 请求，由于有请求体，所以 Content-Length 会大于0。
+        /*
+        POST 请求处理
+        获取body，虽然该方法在后面，但是实际效果是在response前面
+        Content-Length 是一个实体消息首部，用来指明发送给接收方的消息主体的大小1。
+        对于 GET 请求，由于没有请求体，所以 Content-Length 通常为 -1。
+        而对于 POST 请求，由于有请求体，所以 Content-Length 会大于0。
+        */
         if (header.getContentLength() > 0) {
             return DataBufferUtils.join(exchange.getRequest().getBody()).flatMap(dataBuffer -> {
                 byte[] bytes = new byte[dataBuffer.readableByteCount()];
@@ -149,14 +169,14 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                 //设置requestBody到变量，让response获取
                 requestBody.set(bodyString);
                 log.info("requestBody = {}", bodyString);
-                //3.鉴权
+                //3.POST 校验 参数合法性
                 boolean authed = AuthenticationUtils.authenticationPostRequest(bodyString);
                 if (!authed) {
                     return handlerNoAuth(originalResponse);
                 }
-                //TODO 4.接口是否存在，后期使用RPC调用
-                InterfaceInfo interfaceInfo = innerInterfaceInfoService.selectInterfaceInfo(path, method);
-                if (null == interfaceInfo) {
+                //4.POST 接口是否存在
+                InnerResult<InterfaceInfo> result = innerInterfaceInfoService.selectInterfaceInfo(path, method);
+                if (null == result || HttpStatus.OK.value() != result.getCode()) {
                     return handlerInvokeError(originalResponse);
                 }
 
@@ -170,21 +190,23 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                         return cachedFlux;
                     }
                 };
+                // 5.POST 请求转发
                 return chain.filter(exchange.mutate().request(mutatedRequest).response(decoratedResponse).build());
             });
+        } else {
+            //GET 校验 参数合法性
+            boolean authed = AuthenticationUtils.authenticationGetRequest(request.getQueryParams());
+            if (!authed) {
+                return handlerNoAuth(originalResponse);
+            }
+            // 4.GET 接口是否存在
+            InnerResult<InterfaceInfo> result = innerInterfaceInfoService.selectInterfaceInfo(path, method);
+            if (null == result || HttpStatus.OK.value() != result.getCode()) {
+                return handlerInvokeError(originalResponse);
+            }
         }
 
-        //校验GET 参数合法性
-        boolean authed = AuthenticationUtils.authenticationGetRequest(request.getQueryParams());
-        if (!authed) {
-            return handlerNoAuth(originalResponse);
-        }
-        // 4.检查接口是否存在
-        InterfaceInfo interfaceInfo = innerInterfaceInfoService.selectInterfaceInfo(path, method);
-        if (null == interfaceInfo) {
-            return handlerInvokeError(originalResponse);
-        }
-        //没有获取BODY，不用处理request
+        // 5.GET 请求转发
         return chain.filter(exchange.mutate().response(decoratedResponse).build());
     }
 

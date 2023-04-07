@@ -8,7 +8,7 @@ import org.springframework.util.MultiValueMap;
 import java.util.*;
 
 /**
- * @description: 鉴权工具类
+ * @description: 鉴权工具类 todo 移动到sdk中
  * 1.获取请求参数
  * 2.判断AccessKey合法性：查询数据库是否分配过这对密钥
  * 3.重新加密签名，签名流程：

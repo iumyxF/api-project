@@ -1,4 +1,4 @@
-package com.example.api.common;
+package com.example.api.model;
 
 /**
  * 错误码
@@ -10,7 +10,7 @@ public enum ErrorCode {
     /**
      * Success code.
      */
-    SUCCESS(200, "ok"),
+    SUCCESS(0, "ok"),
     /**
      * Params error code.
      */

@@ -1,4 +1,4 @@
-package com.example.api.common;
+package com.example.api.model;
 
 /**
  * 返回工具类

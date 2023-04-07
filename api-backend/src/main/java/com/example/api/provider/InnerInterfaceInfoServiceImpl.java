@@ -1,5 +1,6 @@
 package com.example.api.provider;
 
+import com.example.api.common.model.InnerResult;
 import com.example.api.common.model.entity.InterfaceInfo;
 import com.example.api.common.service.InnerInterfaceInfoService;
 import com.example.api.service.InterfaceInfoService;
@@ -23,9 +24,9 @@ public class InnerInterfaceInfoServiceImpl implements InnerInterfaceInfoService 
     private InterfaceInfoService interfaceInfoService;
 
     @Override
-    public InterfaceInfo selectInterfaceInfo(String url, String method) {
+    public InnerResult<InterfaceInfo> selectInterfaceInfo(String url, String method) {
         InterfaceInfo interfaceInfo = interfaceInfoService.selectInterfaceInfoByUrlAndMethod(url, method);
         log.info("[dubbo] 远程查询接口的id: {}", interfaceInfo.getId());
-        return interfaceInfo;
+        return InnerResult.ok(interfaceInfo);
     }
 }

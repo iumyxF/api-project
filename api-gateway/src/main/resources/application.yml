@@ -21,6 +21,7 @@ logging:
 dubbo:
   application:
     name: api-gateway
+    qos-port: 33333
   protocol:
     name: dubbo
     port: -1

@@ -13,7 +13,7 @@
     <artifactId>api-gateway</artifactId>
 
     <dependencies>
-        <!--dubbo common-->
+        <!--公共模块 common-->
         <dependency>
             <groupId>com.example.api</groupId>
             <artifactId>api-common</artifactId>
@@ -34,6 +34,11 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- spring starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <!--spring-->
         <dependency>

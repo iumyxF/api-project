@@ -1,8 +1,17 @@
 package com.example.gateway;
 
-import com.alibaba.fastjson2.JSONObject;
+import cn.hutool.core.map.MapUtil;
+import com.example.api.common.model.InnerResult;
+import com.example.api.common.model.entity.InterfaceInfo;
+import com.example.api.common.model.entity.User;
+import com.example.api.common.service.InnerInterfaceInfoService;
+import com.example.api.common.service.InnerUserInterfaceInfoService;
+import com.example.api.common.service.InnerUserService;
+import com.example.api.common.utils.SignUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -22,6 +31,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.CharBuffer;
@@ -39,6 +49,18 @@ import java.util.concurrent.atomic.AtomicReference;
 public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
 
     private static final Set<String> WHITE_LIST = Collections.singleton("127.0.0.1");
+
+    @Resource
+    private ObjectMapper objectMapper;
+
+    @DubboReference
+    private InnerUserService innerUserService;
+
+    @DubboReference
+    private InnerInterfaceInfoService innerInterfaceInfoService;
+
+    @DubboReference
+    private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
 
     /**
      * 全局过滤器中需要进行的操作
@@ -73,15 +95,60 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
         log.info("path = {}", path);
         log.info("header = {}", header);
         log.info("*** method = {}", method);
+
         //2. 黑白名单
         if (!WHITE_LIST.contains(host)) {
             return handlerNoAuth(originalResponse);
         }
         //请求参数，post从请求里获取请求体
         Map<String, String> params = wrapRequestParams(serverHttpRequest, originalResponse, method);
+        if (MapUtil.isEmpty(params)) {
+            return handlerNoAuth(originalResponse);
+        }
         log.info("*** params = {}", params);
-        //参数校验 todo 重构
-        // 获取用户id和接口id 后 调用sdk生成sign 对比完事~
+
+        //参数校验
+
+        //暂时性SecretKey
+        String accessKey = params.get("accessKey");
+        String timestamp = params.get("timestamp");
+        String nonce = params.get("nonce");
+        String sign = params.get("sign");
+
+        String tempSecretKey = "ari";
+
+        //校验用户信息（accessKey）
+
+        InnerResult<User> userResult = innerUserService.selectUserByAccessKey(accessKey);
+        if (null == userResult || null == userResult.getData()) {
+            return handlerNoAuth(originalResponse);
+        }
+        User user = userResult.getData();
+        //校验接口信息
+        InnerResult<InterfaceInfo> interfaceResult = innerInterfaceInfoService.selectInterfaceInfo(uri.getPath(), method.name());
+        if (null == interfaceResult || interfaceResult.getData() == null) {
+            return handlerNoAuth(originalResponse);
+        }
+        InterfaceInfo interfaceInfo = interfaceResult.getData();
+
+        log.info("调用的接口:{}", interfaceInfo);
+        log.info("接口调用者:{}", user);
+
+        //校验时间戳
+        if (null == timestamp || Long.parseLong(timestamp) <= 0L) {
+            return handlerNoAuth(originalResponse);
+        }
+        //校验nonce todo redis
+        if (null == nonce || Long.parseLong(nonce) <= 0L) {
+            return handlerNoAuth(originalResponse);
+        }
+        //校验sign参数
+        params.put("secretKey", tempSecretKey);
+        String serverSign = SignUtils.createSign(params);
+        log.info("服务端 生成的sign:{}", serverSign);
+        if (!serverSign.equals(sign)) {
+            return handlerNoAuth(originalResponse);
+        }
 
         //响应处理
         DataBufferFactory bufferFactory = originalResponse.bufferFactory();
@@ -103,10 +170,15 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
                             }
                         });
                         String result = stringBuffer.toString();
-                        JSONObject jsonObject = JSONObject.parseObject(result);
-                        log.info("响应结果:{}", jsonObject);
-                        //todo 接口次数回调和日志
-                        //根据上面的用户id和接口id调用接口次数+1 完事~
+                        InnerResult innerResult;
+                        try {
+                            innerResult = objectMapper.readValue(result, InnerResult.class);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                        log.info("响应结果:{}", innerResult);
+                        //调用接口次数+1
+                        innerUserInterfaceInfoService.incrementInterfaceCallCount(interfaceInfo.getId(), user.getId());
                         byte[] uppedContent = new String(result.getBytes(), StandardCharsets.UTF_8).getBytes();
                         originalResponse.getHeaders().setContentLength(uppedContent.length);
                         return bufferFactory.wrap(uppedContent);
@@ -179,18 +251,9 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
         if (HttpMethod.GET.equals(method)) {
             //封装校验参数
             MultiValueMap<String, String> map = request.getQueryParams();
-            //获取需要校验的必要参数（）
-            String accessKey = map.getFirst("accessKey");
-            String timestamp = map.getFirst("timestamp");
-            String nonce = map.getFirst("nonce");
-            String sign = map.getFirst("sign");
-            if (StringUtils.isAnyBlank(accessKey, timestamp, nonce, sign)) {
-                handlerNoAuth(response);
+            for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+                params.put(entry.getKey(), entry.getValue().get(0));
             }
-            params.put("accessKey", accessKey);
-            params.put("timestamp", timestamp);
-            params.put("nonce", nonce);
-            params.put("sign", sign);
         } else if (HttpMethod.POST.equals(method)) {
             Map<String, String> map = resolveBodyFromRequest(request);
             params.putAll(map);

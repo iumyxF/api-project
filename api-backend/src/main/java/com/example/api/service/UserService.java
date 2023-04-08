@@ -56,4 +56,12 @@ public interface UserService extends IService<User> {
      * @return 结果
      */
     boolean userLogout(HttpServletRequest request);
+
+    /**
+     * 根据accessKey查询用户
+     *
+     * @param accessKey 密钥Key
+     * @return 结果
+     */
+    User selectUserByAccessKey(String accessKey);
 }

@@ -37,7 +37,7 @@ public class InnerUserInterfaceInfoServiceImpl implements InnerUserInterfaceInfo
         UpdateWrapper<UserInterfaceInfo> wrapper = new UpdateWrapper<>();
         wrapper.eq("userId", userId);
         wrapper.eq("interfaceInfoId", interfaceId);
-        wrapper.setSql("leftNum = leftNum - 1 , total = totalNum + 1");
+        wrapper.setSql("leftNum = leftNum - 1 , totalNum = totalNum + 1");
         boolean update = userInterfaceInfoService.update(wrapper);
         return InnerResult.ok(update);
     }

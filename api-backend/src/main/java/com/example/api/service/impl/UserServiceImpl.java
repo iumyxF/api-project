@@ -1,5 +1,6 @@
 package com.example.api.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.api.common.ErrorCode;
@@ -104,7 +105,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 获取当前登录用户
-     *
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {
@@ -125,7 +125,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 是否为管理员
-     *
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
@@ -137,7 +136,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 用户注销
-     *
      */
     @Override
     public boolean userLogout(HttpServletRequest request) {
@@ -149,6 +147,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return true;
     }
 
+    /**
+     * 查询用户
+     *
+     * @param accessKey 密钥Key
+     * @return User
+     */
+    @Override
+    public User selectUserByAccessKey(String accessKey) {
+        if (StringUtils.isBlank(accessKey)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .eq(User::getAccessKey, accessKey);
+        return userMapper.selectOne(wrapper);
+    }
 }
 
 

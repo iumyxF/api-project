@@ -27,6 +27,7 @@ public class InterfaceInfoControllerTest {
         map.put("nonce", "123456");
         map.put("timestamp", String.valueOf(millis));
         map.put("accessKey", "zoe");
+        map.put("secretKey", "ari");
         String sign = creatSign(map);
         map.put("sign", sign);
         System.out.println("sign值 = " + sign);
@@ -54,7 +55,6 @@ public class InterfaceInfoControllerTest {
         TreeMap<String, String> treeMap = MapUtil.sort(map);
         System.out.println("排序后的参数 : " + treeMap);
         StringBuilder builder = mapToString(treeMap);
-        builder.append("&secretKey=ari");
         String s = builder.toString().toUpperCase();
         System.out.println("加密前的字符串 : " + s);
         return SecureUtil.md5(s);

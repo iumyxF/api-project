@@ -20,4 +20,6 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
      * @param add               the add
      */
     void validUserInterfaceInfo(UserInterfaceInfo userInterfaceInfo, boolean add);
+
+    boolean verifyInvokeUserInterfaceInfo(Long userId, Long interfaceId);
 }

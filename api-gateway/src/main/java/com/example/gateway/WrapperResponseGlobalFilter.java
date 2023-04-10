@@ -108,14 +108,10 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
         log.info("*** params = {}", params);
 
         //参数校验
-
-        //暂时性SecretKey
         String accessKey = params.get("accessKey");
         String timestamp = params.get("timestamp");
         String nonce = params.get("nonce");
         String sign = params.get("sign");
-
-        String tempSecretKey = "ari";
 
         //校验用户信息（accessKey）
 
@@ -143,7 +139,7 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
             return handlerNoAuth(originalResponse);
         }
         //校验sign参数
-        params.put("secretKey", tempSecretKey);
+        params.put("secretKey", user.getSecretKey());
         String serverSign = SignUtils.createSign(params);
         log.info("服务端 生成的sign:{}", serverSign);
         if (!serverSign.equals(sign)) {

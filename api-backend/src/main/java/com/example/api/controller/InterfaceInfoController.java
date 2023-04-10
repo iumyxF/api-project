@@ -10,18 +10,22 @@ import com.example.api.constant.CommonConstant;
 import com.example.api.constant.SystemConstant;
 import com.example.api.exception.BusinessException;
 import com.example.api.model.dto.interfaceinfo.InterfaceInfoAddRequest;
+import com.example.api.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.example.api.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.example.api.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.example.api.model.enums.InterfaceInfoStatusEnum;
 import com.example.api.service.InterfaceInfoService;
+import com.example.api.service.UserInterfaceInfoService;
 import com.example.api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +44,9 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserInterfaceInfoService userInterfaceInfoService;
 
     // region 增删改查
 
@@ -224,5 +231,42 @@ public class InterfaceInfoController {
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
         boolean result = interfaceInfoService.updateById(interfaceInfo);
         return ResultUtils.success(result);
+    }
+
+    @PostMapping("/invoke")
+    public BaseResponse<Object> invoke(@RequestBody InterfaceInfoInvokeRequest invokeRequest, HttpServletRequest request) {
+        //参数校验
+        if (null == invokeRequest || invokeRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long id = invokeRequest.getId();
+        String requestParams = invokeRequest.getUserRequestParams();
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (null == interfaceInfo) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        //TODO 校验参数是否符合规范,如果符合规范则返回Map参数集合
+        HashMap<String, String> params = new HashMap<>();
+        //interfaceInfoService.validRequestParams(interfaceInfo.getRequestParams(), requestParams)
+        //throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口请求参数格式有误");
+
+        //获取当前登录用户
+        User user = userService.getLoginUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户信息不存在");
+        }
+
+        //校验是否有调用次数
+        userInterfaceInfoService.verifyInvokeUserInterfaceInfo(user.getId(), interfaceInfo.getId());
+
+        //TODO 调用
+        if (HttpMethod.GET.name().equals(interfaceInfo.getMethod())) {
+
+        } else {
+
+        }
+        //调用返回的结果是 BaseResponse 将他转成JSONObject获取其中的data直接返回
+
+        return null;
     }
 }

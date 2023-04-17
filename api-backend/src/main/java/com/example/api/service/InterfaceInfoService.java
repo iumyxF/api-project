@@ -28,4 +28,12 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
      * @return 接口对象
      */
     InterfaceInfo selectInterfaceInfoByUrlAndMethod(String url, String method);
+
+    /**
+     * 校验请求参数和接口参数是否合法
+     *
+     * @param userRequestParams          用户请求参数
+     * @param interfaceInfoRequestParams 接口请求参数
+     */
+    void validRequestParams(String userRequestParams, String interfaceInfoRequestParams);
 }

@@ -247,7 +247,7 @@ public class InterfaceInfoController {
         }
         //TODO 校验参数是否符合规范,如果符合规范则返回Map参数集合
         HashMap<String, String> params = new HashMap<>();
-        //interfaceInfoService.validRequestParams(interfaceInfo.getRequestParams(), requestParams)
+        interfaceInfoService.validRequestParams(interfaceInfo.getRequestParams(), requestParams);
         //throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口请求参数格式有误");
 
         //获取当前登录用户

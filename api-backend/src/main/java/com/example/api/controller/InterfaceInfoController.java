@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -245,10 +245,8 @@ public class InterfaceInfoController {
         if (null == interfaceInfo) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        //TODO 校验参数是否符合规范,如果符合规范则返回Map参数集合
-        HashMap<String, String> params = new HashMap<>();
-        interfaceInfoService.validRequestParams(interfaceInfo.getRequestParams(), requestParams);
-        //throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口请求参数格式有误");
+        //对比校验接口参数和用户参数，并且将用户参数转成map格式
+        Map<String, Object> userRequestParams = interfaceInfoService.validAndGetRequestParams(interfaceInfo.getRequestParams(), requestParams);
 
         //获取当前登录用户
         User user = userService.getLoginUser(request);
@@ -266,7 +264,6 @@ public class InterfaceInfoController {
 
         }
         //调用返回的结果是 BaseResponse 将他转成JSONObject获取其中的data直接返回
-
         return null;
     }
 }

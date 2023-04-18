@@ -3,6 +3,8 @@ package com.example.api.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.api.common.model.entity.InterfaceInfo;
 
+import java.util.Map;
+
 /**
  * The interface info service.
  *
@@ -35,5 +37,5 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
      * @param userRequestParams          用户请求参数
      * @param interfaceInfoRequestParams 接口请求参数
      */
-    void validRequestParams(String userRequestParams, String interfaceInfoRequestParams);
+    Map<String,Object> validAndGetRequestParams(String userRequestParams, String interfaceInfoRequestParams);
 }

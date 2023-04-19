@@ -29,14 +29,12 @@ public class ClientServiceImpl implements IClientService {
     @Override
     public String doGet(Map<String, Object> requestParams) {
         String ip = address + ":" + port;
-        String result = HttpUtil.get(ip, requestParams);
-        return result;
+        return HttpUtil.get(ip, requestParams);
     }
 
     @Override
     public String doPost(Map<String, Object> requestParams) {
         String ip = address + ":" + port;
-        String result = HttpUtil.post(ip, requestParams);
-        return result;
+        return HttpUtil.post(ip, requestParams);
     }
 }

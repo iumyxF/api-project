@@ -41,5 +41,4 @@ public class SignUtils {
         }
         return sb.toString().toUpperCase();
     }
-
 }

@@ -14,7 +14,7 @@
 
 # api-client-sdk
 
-sdk定位是提供给本项目外的项目使用的，不是给backend、common、gateway使用的
+sdk 的作用是帮助backend去调用gateway的
 
 # 接口认证流程
 

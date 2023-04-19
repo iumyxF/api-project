@@ -36,6 +36,7 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
      *
      * @param userRequestParams          用户请求参数
      * @param interfaceInfoRequestParams 接口请求参数
+     * @return 用户参数
      */
     Map<String,Object> validAndGetRequestParams(String userRequestParams, String interfaceInfoRequestParams);
 }

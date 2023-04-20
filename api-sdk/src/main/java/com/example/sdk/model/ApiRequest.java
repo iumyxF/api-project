@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 /**
  * @author fzy
  * @description: 接口调用请求参数
@@ -14,6 +16,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ApiRequest {
 
-    private String[] templateParamSet;
+    /**
+     * 接口必要参数
+     */
+    private Map<String, Object> interfaceParams;
 
 }

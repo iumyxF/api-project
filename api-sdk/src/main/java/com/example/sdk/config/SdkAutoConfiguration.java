@@ -21,7 +21,7 @@ public class SdkAutoConfiguration {
     @Resource
     private SdkProperties sdkProperties;
 
-    @Bean
+    @Bean(name = "apiSdkClientService")
     @ConditionalOnMissingBean
     public IClientService clientService() {
         return new ClientServiceImpl(sdkProperties.getAddress(), sdkProperties.getPort());

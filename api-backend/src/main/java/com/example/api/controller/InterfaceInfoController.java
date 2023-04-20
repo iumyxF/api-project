@@ -250,7 +250,7 @@ public class InterfaceInfoController {
 
         //获取当前登录用户
         User user = userService.getLoginUser(request);
-        if (user == null) {
+        if (null == user) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户信息不存在");
         }
 
@@ -258,7 +258,7 @@ public class InterfaceInfoController {
         userInterfaceInfoService.verifyInvokeUserInterfaceInfo(user.getId(), interfaceInfo.getId());
 
         //TODO 调用
-        if (HttpMethod.GET.name().equals(interfaceInfo.getMethod())) {
+        if (HttpMethod.GET.matches(interfaceInfo.getMethod().toUpperCase())) {
 
         } else {
 

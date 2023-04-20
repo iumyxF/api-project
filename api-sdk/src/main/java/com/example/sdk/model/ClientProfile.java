@@ -14,7 +14,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClientProfile {
 
+    /**
+     * 签名方式 默认HmacSHA256
+     */
     private String signMethod;
 
+    /**
+     * http配置
+     */
     private HttpProfile httpProfile;
+
+    public ClientProfile(HttpProfile httpProfile) {
+        this.signMethod = "HmacSHA256";
+        this.httpProfile = httpProfile;
+    }
 }

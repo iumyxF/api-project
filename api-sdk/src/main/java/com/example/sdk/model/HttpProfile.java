@@ -14,9 +14,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HttpProfile {
 
+    /**
+     * 请求的接口的请求方式
+     */
     private String method;
 
+    /**
+     * 超时时间 单位秒
+     */
     private Long connTimeout;
 
-    private String endpoint;
+    public HttpProfile(String method) {
+        this.method = method;
+        this.connTimeout = 1000L * 60;
+    }
 }

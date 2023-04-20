@@ -40,7 +40,8 @@ timestamp + nonce
 
 - nonce指唯一的随机字符串，用来标识每个被签名的请求。通过为每个请求提供一个唯一的标识符，服务器能够防止请求被多次使用（记录所有用过的nonce以阻止它们被二次使用）。
 - timestamp
-  用于减少存储nonce带来的压力，首先检查携带的timestamp是否在15分钟内，如超出时间范围，则拒绝，然后查询携带的nonce，如存在已有集合，则拒绝。否则，记录该nonce，并删除集合内时间戳大于15分钟的nonce。
+  用于减少存储nonce带来的压力，首先检查携带的timestamp是否在15分钟内，如超出时间范围，则拒绝，然后查询携带的nonce，
+  如存在已有集合，则拒绝。否则，记录该nonce，并删除集合内时间戳大于15分钟的nonce。
 
 ### 参数列表
 
@@ -66,8 +67,7 @@ timestamp + nonce
 
 ## 流程
 
-- 注册中心：zookeeper 下载链接(
-  windows) https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
+- 注册中心：zookeeper 下载链接(windows) https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
 - 服务提供者：api-backend
 - 服务消费者：api-gateway
 

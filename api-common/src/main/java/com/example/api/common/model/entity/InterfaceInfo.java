@@ -32,7 +32,8 @@ public class InterfaceInfo implements Serializable {
     private String description;
 
     /**
-     * 接口地址
+     * 接口路径，所有域名都是指向gateway的
+     * '/provider/name/get'
      */
     private String url;
 

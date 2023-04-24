@@ -1,8 +1,9 @@
 package com.example.sdk.client;
 
-import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.http.HttpUtil;
+import com.example.sdk.exception.SdkException;
 import com.example.sdk.model.*;
-import com.example.sdk.service.IClientService;
+import com.example.sdk.utils.SignUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -19,44 +20,36 @@ public class ApiClient {
      */
     private Credential credential;
 
-    /**
-     * 客户端配置信息
-     */
-    private ClientProfile clientProfile;
+    private static final String GATEWAY_HOST = "127.0.0.1:8082";
 
-    /**
-     * 发送请求实现类
-     */
-    private IClientService clientService;
-
-    public ApiClient(Credential credential, ClientProfile clientProfile) {
+    public ApiClient(Credential credential) {
         this.credential = credential;
-        this.clientProfile = clientProfile;
-        this.clientService = SpringUtil.getBean(IClientService.class);
     }
-
 
     public ApiResponse sendRequest(ApiRequest request) {
         String accessKey = credential.getAccessKey();
         String secretKey = credential.getSecretKey();
         if (StringUtils.isAnyBlank(accessKey, secretKey)) {
-            return ApiResponse.fail("accessKey或secretKey不能为空");
+            throw new SdkException(ErrorCode.PARAMS_ERROR, "Credential参数不合法");
         }
         Map<String, Object> interfaceParams = request.getInterfaceParams();
+        String method = request.getMethod();
+        if (null == HttpMethod.resolve(method)) {
+            throw new SdkException(ErrorCode.PARAMS_ERROR, "请求类型不合法");
+        }
+        if (StringUtils.isBlank(request.getUrl())) {
+            throw new SdkException(ErrorCode.PARAMS_ERROR, "请求路径参数不合法");
+        }
         if (interfaceParams.isEmpty()) {
-            return ApiResponse.fail("接口参数缺失");
+            throw new SdkException(ErrorCode.PARAMS_ERROR, "请求参数不合法");
         }
-        HttpProfile httpProfile = clientProfile.getHttpProfile();
-        if (null == httpProfile && StringUtils.isBlank(httpProfile.getMethod())) {
-            return ApiResponse.fail("请配置正确的HttpProfile");
-        }
-
-        //增加校验参数
-        long currentTimeMillis = System.currentTimeMillis();
-
-        String method = httpProfile.getMethod();
+        interfaceParams.put("accessKey", accessKey);
+        interfaceParams.put("secretKey", secretKey);
+        String pathParams = SignUtils.generateGetRequestParams(interfaceParams);
+        String path = request.getUrl() + pathParams;
         if (HttpMethod.GET.matches(method)) {
-            //clientService.doGet();
+            //TODO response 是什么？
+            String response = HttpUtil.get(GATEWAY_HOST + path);
         } else {
             //clientService.doPost();
         }

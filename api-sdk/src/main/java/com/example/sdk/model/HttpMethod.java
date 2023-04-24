@@ -32,14 +32,14 @@ public enum HttpMethod {
      */
     DELETE;
 
-    private static final Map<String, HttpMethod> mappings = new HashMap(16);
+    private static final Map<String, HttpMethod> mappings = new HashMap(4);
 
-    private HttpMethod() {
+    HttpMethod() {
     }
 
     @Nullable
     public static HttpMethod resolve(@Nullable String method) {
-        return method != null ? (HttpMethod) mappings.get(method) : null;
+        return method != null ? mappings.get(method) : null;
     }
 
     public boolean matches(String method) {

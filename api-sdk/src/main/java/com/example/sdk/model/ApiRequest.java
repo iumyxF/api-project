@@ -17,6 +17,16 @@ import java.util.Map;
 public class ApiRequest {
 
     /**
+     * 请求方式
+     */
+    private String method;
+
+    /**
+     * 请求路径
+     */
+    private String url;
+
+    /**
      * 接口必要参数
      */
     private Map<String, Object> interfaceParams;

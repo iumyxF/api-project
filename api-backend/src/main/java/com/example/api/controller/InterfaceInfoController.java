@@ -1,5 +1,6 @@
 package com.example.api.controller;
 
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.api.annotation.AuthCheck;
@@ -17,6 +18,11 @@ import com.example.api.model.enums.InterfaceInfoStatusEnum;
 import com.example.api.service.InterfaceInfoService;
 import com.example.api.service.UserInterfaceInfoService;
 import com.example.api.service.UserService;
+import com.example.sdk.client.ApiClient;
+import com.example.sdk.model.ApiRequest;
+import com.example.sdk.model.ApiResponse;
+import com.example.sdk.model.Credential;
+import com.example.sdk.utils.SignUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -257,9 +263,20 @@ public class InterfaceInfoController {
         //校验是否有调用次数
         userInterfaceInfoService.verifyInvokeUserInterfaceInfo(user.getId(), interfaceInfo.getId());
 
+        //添加基本参数
+        userRequestParams.put("timestamp", System.currentTimeMillis());
+        userRequestParams.put("nonce", RandomUtil.randomNumbers(7));
+
         //TODO 调用
         if (HttpMethod.GET.matches(interfaceInfo.getMethod().toUpperCase())) {
-
+            //创建凭证对象
+            Credential credential = new Credential(user.getAccessKey(), user.getSecretKey());
+            ApiClient client = new ApiClient(credential);
+            //创建请求体
+            ApiRequest apiRequest = new ApiRequest(interfaceInfo.getMethod(), interfaceInfo.getUrl(), userRequestParams);
+            //调用接口
+            ApiResponse apiResponse = client.sendRequest(apiRequest);
+            log.info(apiResponse.toString());
         } else {
 
         }

@@ -31,7 +31,7 @@ public class ApiResponse<T> implements Serializable {
     public static final int FAIL = 500;
 
     public static <T> ApiResponse<T> ok() {
-        return restApiResponse(null, SUCCESS, "操作成功");
+        return restApiResponse(null, SUCCESS, "接口请求成功");
     }
 
     public static <T> ApiResponse<T> ok(T data) {

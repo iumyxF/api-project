@@ -86,19 +86,19 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
             //参数类型
             String type = templateObject.getString("type");
             //参数是否必须
-            Boolean required = templateObject.getBoolean("required");
+            boolean required = templateObject.getBooleanValue("required", false);
 
             //必填参数是否存在
             if (required && !userObject.containsKey(name)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "必填参数缺失");
             }
-            //参数类型是否正确
-            boolean validate = ValidateParamType.valueOf(type.toUpperCase()).validate(userObject, name);
-            if (!validate) {
+            //参数类型是否合法
+            boolean isLegal = ValidateParamType.valueOf(type.toUpperCase()).isLegal(userObject, name);
+            if (!isLegal) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数类型不正确");
             }
             //保存参数
-            Object paramValue = userObject.get("name");
+            Object paramValue = userObject.get(name);
             if (null != paramValue) {
                 resultParams.put(name, paramValue);
             }

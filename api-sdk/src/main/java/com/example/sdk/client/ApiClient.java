@@ -1,6 +1,7 @@
 package com.example.sdk.client;
 
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
 import com.example.sdk.exception.SdkException;
 import com.example.sdk.model.*;
 import com.example.sdk.utils.SignUtils;
@@ -18,7 +19,7 @@ public class ApiClient {
     /**
      * 凭证对象
      */
-    private Credential credential;
+    private final Credential credential;
 
     private static final String GATEWAY_HOST = "127.0.0.1:8082";
 
@@ -26,6 +27,12 @@ public class ApiClient {
         this.credential = credential;
     }
 
+    /**
+     * 发送请求
+     *
+     * @param request 请求体
+     * @return 接口响应结果
+     */
     public ApiResponse sendRequest(ApiRequest request) {
         String accessKey = credential.getAccessKey();
         String secretKey = credential.getSecretKey();
@@ -48,12 +55,20 @@ public class ApiClient {
         String pathParams = SignUtils.generateGetRequestParams(interfaceParams);
         String path = request.getUrl() + pathParams;
         if (HttpMethod.GET.matches(method)) {
-            //TODO response 是什么？
+            //response 是JSON响应体 这里是同步的
+            String url = GATEWAY_HOST + path;
             String response = HttpUtil.get(GATEWAY_HOST + path);
+            //请求不存在的网页返回的<html>...如何处理?
+            ApiResponse apiResponse;
+            try {
+                apiResponse = JSON.parseObject(response, ApiResponse.class);
+            } catch (Exception e) {
+                apiResponse = ApiResponse.fail();
+            }
+            return apiResponse;
         } else {
-            //clientService.doPost();
+            //TODO POST 方式提交
         }
         return ApiResponse.ok();
     }
-
 }

@@ -14,8 +14,8 @@ public enum ValidateParamType {
      */
     BYTE {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getByte(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getByte(paramName);
         }
     },
     /**
@@ -23,8 +23,8 @@ public enum ValidateParamType {
      */
     SHORT {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getShort(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getShort(paramName);
         }
     },
     /**
@@ -32,8 +32,8 @@ public enum ValidateParamType {
      */
     CHAR {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getString(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getString(paramName);
         }
     },
     /**
@@ -41,8 +41,8 @@ public enum ValidateParamType {
      */
     INT {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getInteger(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getInteger(paramName);
         }
     },
     /**
@@ -50,8 +50,8 @@ public enum ValidateParamType {
      */
     FLOAT {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getFloat(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getFloat(paramName);
         }
     },
     /**
@@ -59,8 +59,8 @@ public enum ValidateParamType {
      */
     DOUBLE {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getDouble(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getDouble(paramName);
         }
     },
     /**
@@ -68,8 +68,8 @@ public enum ValidateParamType {
      */
     LONG {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getLong(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getLong(paramName);
         }
     },
     /**
@@ -77,8 +77,8 @@ public enum ValidateParamType {
      */
     ARRAY {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getJSONArray(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getJSONArray(paramName);
         }
     },
     /**
@@ -86,8 +86,8 @@ public enum ValidateParamType {
      */
     STRING {
         @Override
-        public boolean validate(JSONObject userObject, String paramName) {
-            return null == userObject.getString(paramName);
+        public boolean isLegal(JSONObject userObject, String paramName) {
+            return null != userObject.getString(paramName);
         }
     };
 
@@ -98,6 +98,6 @@ public enum ValidateParamType {
      * @param paramName  参数名
      */
 
-    public abstract boolean validate(JSONObject userObject, String paramName);
+    public abstract boolean isLegal(JSONObject userObject, String paramName);
 
 }

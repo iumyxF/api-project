@@ -2,10 +2,14 @@ package com.example.api.controller;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.crypto.SecureUtil;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -22,18 +26,19 @@ public class InterfaceInfoControllerTest {
     @Test
     public void invokeInterfaceGet() {
         long millis = System.currentTimeMillis();
-        HashMap<String, String> map = new HashMap<>();
-        map.put("name", "jack");
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("username", "jack");
         map.put("nonce", "123456");
         map.put("timestamp", String.valueOf(millis));
         map.put("accessKey", "zoe");
         map.put("secretKey", "ari");
         String sign = creatSign(map);
         map.put("sign", sign);
+        map.remove("secretKey");
         System.out.println("sign值 = " + sign);
         StringBuilder path = mapToString(map);
         String url = "127.0.0.1:8082/provider/name/get?" + path;
-        System.out.println(path);
+        System.out.println("url = " + url);
         String s = HttpUtil.get(url);
         System.out.println(s);
     }
@@ -41,18 +46,31 @@ public class InterfaceInfoControllerTest {
     @Test
     public void invokeInterfacePost() {
         String url = "127.0.0.1:8082/provider/name/post";
-        HashMap<String, Object> params = new HashMap<>(5);
-        params.put("name", "rookie");
-        params.put("k1", "v1");
-        params.put("k2", "v2");
-        params.put("k3", "v3");
-        params.put("k4", "v4");
-        String s = HttpUtil.post(url, params);
-        System.out.println(s);
+        HashMap<String, Object> map = new HashMap<>();
+        //校验参数
+        map.put("nonce", 123456);
+        map.put("timestamp", System.currentTimeMillis());
+        map.put("accessKey", "zoe");
+        map.put("secretKey", "ari");
+        //接口参数
+        map.put("id", 1001);
+        map.put("userName", "lisi");
+        String sign = creatSign(map);
+        map.put("sign", sign);
+        System.out.println("sign值 = " + sign);
+
+        map.remove("secretKey");
+
+        String json = JSON.toJSONString(map);
+        System.out.println("json = " + json);
+        String res = HttpRequest.post(url)
+                .body(json)
+                .execute().body();
+        System.out.println(res);
     }
 
-    private String creatSign(HashMap<String, String> map) {
-        TreeMap<String, String> treeMap = MapUtil.sort(map);
+    private String creatSign(HashMap<String, Object> map) {
+        TreeMap<String, Object> treeMap = MapUtil.sort(map);
         System.out.println("排序后的参数 : " + treeMap);
         StringBuilder builder = mapToString(treeMap);
         String s = builder.toString().toUpperCase();
@@ -60,14 +78,25 @@ public class InterfaceInfoControllerTest {
         return SecureUtil.md5(s);
     }
 
-    public static StringBuilder mapToString(Map<String, String> map) {
+    public static StringBuilder mapToString(Map<String, Object> map) {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
             sb.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
         }
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
         }
         return sb;
+    }
+
+    @Test
+    public void pareJsonTest() {
+        String json = "{\"id\":1001,\"userName\":\"lisi\"}";
+        JSONObject obj = JSON.parseObject(json); // 将JSON字符串解析为JSONObject对象
+        Map<String, Object> map = new LinkedHashMap<>(); // 创建一个有序的Map
+        // 遍历JSONObject对象的所有属性
+        // 将属性名和属性值放到Map中
+        map.putAll(obj);
+        System.out.println(map); // 输出Map
     }
 }

@@ -40,6 +40,7 @@ public enum ErrorCode {
      */
     OPERATION_ERROR(50001, "操作失败");
 
+
     /**
      * 状态码
      */

@@ -16,9 +16,9 @@ public class SignUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(SignUtils.class);
 
-    public static String createSign(Map<String, String> params) {
+    public static String createSign(Map<String, Object> params) {
         //排序
-        TreeMap<String, String> treeMap = new TreeMap<>(params);
+        TreeMap<String, Object> treeMap = new TreeMap<>(params);
         //排除sign参数
         treeMap.remove("sign");
         logger.info("排序后的参数:{}", treeMap);
@@ -30,9 +30,9 @@ public class SignUtils {
     /**
      * 将map拼接成k1=v1&k2=v2的形式
      */
-    public static String mapToString(Map<String, String> map) {
+    public static String mapToString(Map<String, Object> map) {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
             sb.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
         }
         if (sb.length() > 0) {

@@ -22,11 +22,11 @@ import com.example.sdk.client.ApiClient;
 import com.example.sdk.model.ApiRequest;
 import com.example.sdk.model.ApiResponse;
 import com.example.sdk.model.Credential;
-import com.example.sdk.utils.SignUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -252,7 +252,7 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
         //对比校验接口参数和用户参数，并且将用户参数转成map格式
-        Map<String, Object> userRequestParams = interfaceInfoService.validAndGetRequestParams(interfaceInfo.getRequestParams(), requestParams);
+        Map<String, Object> userRequestParams = interfaceInfoService.validAndGetRequestParams(requestParams, interfaceInfo.getRequestParams());
 
         //获取当前登录用户
         User user = userService.getLoginUser(request);
@@ -261,13 +261,16 @@ public class InterfaceInfoController {
         }
 
         //校验是否有调用次数
-        userInterfaceInfoService.verifyInvokeUserInterfaceInfo(user.getId(), interfaceInfo.getId());
+        boolean hasCallingPrivileges = userInterfaceInfoService.verifyInvokeUserInterfaceInfo(user.getId(), interfaceInfo.getId());
+        if (!hasCallingPrivileges) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户不具有该接口调用权限");
+        }
 
         //添加基本参数
         userRequestParams.put("timestamp", System.currentTimeMillis());
-        userRequestParams.put("nonce", RandomUtil.randomNumbers(7));
+        userRequestParams.put("nonce", RandomUtil.randomLong(0, Long.MAX_VALUE));
 
-        //TODO 调用
+        //调用接口
         if (HttpMethod.GET.matches(interfaceInfo.getMethod().toUpperCase())) {
             //创建凭证对象
             Credential credential = new Credential(user.getAccessKey(), user.getSecretKey());
@@ -276,9 +279,12 @@ public class InterfaceInfoController {
             ApiRequest apiRequest = new ApiRequest(interfaceInfo.getMethod(), interfaceInfo.getUrl(), userRequestParams);
             //调用接口
             ApiResponse apiResponse = client.sendRequest(apiRequest);
-            log.info(apiResponse.toString());
+            if (HttpStatus.OK.value() != apiResponse.getCode()) {
+                return ResultUtils.error(ErrorCode.REMOTE_CALL_ERROR);
+            }
+            return ResultUtils.success(apiResponse.getData());
         } else {
-
+            //TODO POST
         }
         //调用返回的结果是 BaseResponse 将他转成JSONObject获取其中的data直接返回
         return null;

@@ -1,13 +1,15 @@
 package com.example.gateway;
 
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.text.StrPool;
+import com.alibaba.fastjson2.JSONObject;
 import com.example.api.common.model.InnerResult;
 import com.example.api.common.model.entity.InterfaceInfo;
 import com.example.api.common.model.entity.User;
 import com.example.api.common.service.InnerInterfaceInfoService;
 import com.example.api.common.service.InnerUserInterfaceInfoService;
 import com.example.api.common.service.InnerUserService;
-import com.example.api.common.utils.SignUtils;
+import com.example.sdk.utils.SignUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -101,17 +103,17 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
             return handlerNoAuth(originalResponse);
         }
         //请求参数，post从请求里获取请求体
-        Map<String, String> params = wrapRequestParams(serverHttpRequest, originalResponse, method);
+        Map<String, Object> params = wrapRequestParams(serverHttpRequest, originalResponse, method);
         if (MapUtil.isEmpty(params)) {
             return handlerNoAuth(originalResponse);
         }
         log.info("*** params = {}", params);
 
         //参数校验
-        String accessKey = params.get("accessKey");
-        String timestamp = params.get("timestamp");
-        String nonce = params.get("nonce");
-        String sign = params.get("sign");
+        String accessKey = String.valueOf(params.get("accessKey"));
+        String timestamp = String.valueOf(params.get("timestamp"));
+        String nonce = String.valueOf(params.get("nonce"));
+        String sign = String.valueOf(params.get("sign"));
 
         //校验用户信息（accessKey）
 
@@ -122,7 +124,7 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
         User user = userResult.getData();
         //校验接口信息
         InnerResult<InterfaceInfo> interfaceResult = innerInterfaceInfoService.selectInterfaceInfo(uri.getPath(), method.name());
-        if (null == interfaceResult || interfaceResult.getData() == null) {
+        if (null == interfaceResult || null == interfaceResult.getData()) {
             return handlerNoAuth(originalResponse);
         }
         InterfaceInfo interfaceInfo = interfaceResult.getData();
@@ -138,8 +140,9 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
         if (null == nonce || Long.parseLong(nonce) <= 0L) {
             return handlerNoAuth(originalResponse);
         }
-        //校验sign参数
+        //校验sign参数,去除参数中的sign
         params.put("secretKey", user.getSecretKey());
+        params.remove("sign");
         String serverSign = SignUtils.createSign(params);
         log.info("服务端 生成的sign:{}", serverSign);
         if (!serverSign.equals(sign)) {
@@ -183,6 +186,7 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
                 return super.writeWith(body);
             }
         };
+        //TODO gateway应该需要把校验参数(ak、sk、time、nonce、sign)都去除掉，provider能看到他需要的参数
         return chain.filter(exchange.mutate().response(decoratedResponse).build());
     }
 
@@ -191,7 +195,7 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
      *
      * @return 请求体
      */
-    private Map<String, String> resolveBodyFromRequest(ServerHttpRequest serverHttpRequest) {
+    private Map<String, Object> resolveBodyFromRequest(ServerHttpRequest serverHttpRequest) {
         //获取请求体
         Flux<DataBuffer> body = serverHttpRequest.getBody();
 
@@ -201,13 +205,20 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
             DataBufferUtils.release(buffer);
             bodyRef.set(charBuffer.toString());
         });
-        //获取request body  name=rookie&k3=v3&k4=v4&k1=v1&k2=v2
+        //获取request body
+        // str = name=rookie&k3=v3&k4=v4&k1=v1&k2=v2，还有可能 str = {"id":1001,"userName":"lisi"}
         String str = bodyRef.get();
-        String[] pairs = str.split("&");
-        Map<String, String> map = new HashMap<>(16);
-        for (String pair : pairs) {
-            String[] keyValue = pair.split("=");
-            map.put(keyValue[0], keyValue[1]);
+        Map<String, Object> map = new HashMap<>(16);
+        //JSON结构
+        if (str.startsWith(StrPool.DELIM_START) && str.endsWith(StrPool.DELIM_END)) {
+            JSONObject jsonObject = JSONObject.parseObject(str);
+            map.putAll(jsonObject);
+        } else {
+            String[] pairs = str.split("&");
+            for (String pair : pairs) {
+                String[] keyValue = pair.split("=");
+                map.put(keyValue[0], keyValue[1]);
+            }
         }
         return map;
     }
@@ -242,8 +253,8 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
      * @param method   请求方式
      * @return 请求参数集合
      */
-    private Map<String, String> wrapRequestParams(ServerHttpRequest request, ServerHttpResponse response, HttpMethod method) {
-        HashMap<String, String> params = new HashMap<>(4);
+    private Map<String, Object> wrapRequestParams(ServerHttpRequest request, ServerHttpResponse response, HttpMethod method) {
+        HashMap<String, Object> params = new HashMap<>(4);
         if (HttpMethod.GET.equals(method)) {
             //封装校验参数
             MultiValueMap<String, String> map = request.getQueryParams();
@@ -251,7 +262,7 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
                 params.put(entry.getKey(), entry.getValue().get(0));
             }
         } else if (HttpMethod.POST.equals(method)) {
-            Map<String, String> map = resolveBodyFromRequest(request);
+            Map<String, Object> map = resolveBodyFromRequest(request);
             params.putAll(map);
         }
         return params;

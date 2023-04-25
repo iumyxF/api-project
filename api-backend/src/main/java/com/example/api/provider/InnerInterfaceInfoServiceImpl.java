@@ -9,6 +9,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author iumyxF
@@ -26,6 +27,9 @@ public class InnerInterfaceInfoServiceImpl implements InnerInterfaceInfoService 
     @Override
     public InnerResult<InterfaceInfo> selectInterfaceInfo(String url, String method) {
         InterfaceInfo interfaceInfo = interfaceInfoService.selectInterfaceInfoByUrlAndMethod(url, method);
+        if (Objects.isNull(interfaceInfo)) {
+            return InnerResult.fail();
+        }
         log.info("[dubbo] 远程查询接口的id: {}", interfaceInfo.getId());
         return InnerResult.ok(interfaceInfo);
     }

@@ -1,6 +1,5 @@
 package com.example.sdk.utils;
 
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.example.sdk.exception.SdkException;
 import com.example.sdk.model.ErrorCode;
@@ -23,11 +22,11 @@ public class SignUtils {
 
     /**
      * 生成GET请求参数
-     * http://localshot:8080/interface/invoke?k1=v1&k2=v2....
+     * eg: " http://localshot:8080/interface/invoke?k1=v1&k2=v2 "
      * 目标字符串：?k1=v1&k2=v2....
      *
      * @param params 用户参数
-     * @return 拼接好的参数[k1=v1&k2=v2]
+     * @return 拼接好的参数[k1=v1&k2=v2] 这里参数是没有（secretKey）
      */
     public static String generateGetRequestParams(Map<String, Object> params) {
         Map<String, Object> processParams = generatePostRequestParams(params);
@@ -62,6 +61,8 @@ public class SignUtils {
         }
         String sign = createSign(params);
         params.put("sign", sign);
+        //将secretKey移除
+        params.remove("secretKey");
         return params;
     }
 
@@ -71,8 +72,8 @@ public class SignUtils {
      * 2.将参数拼接成k1=v1&k2=v2...形式
      * 3.md5加密上面的字符串并转成大写
      *
-     * @param params 用户参数
-     * @return
+     * @param params 用户参数(包括SecretKey)
+     * @return Sign
      */
     public static String createSign(Map<String, Object> params) {
         // 排序

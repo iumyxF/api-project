@@ -32,14 +32,14 @@ public enum HttpMethod {
      */
     DELETE;
 
-    private static final Map<String, HttpMethod> mappings = new HashMap(4);
+    private static final Map<String, HttpMethod> MAPPINGS = new HashMap(4);
 
     HttpMethod() {
     }
 
     @Nullable
     public static HttpMethod resolve(@Nullable String method) {
-        return method != null ? mappings.get(method) : null;
+        return method != null ? MAPPINGS.get(method) : null;
     }
 
     public boolean matches(String method) {
@@ -47,12 +47,9 @@ public enum HttpMethod {
     }
 
     static {
-        HttpMethod[] var0 = values();
-        int var1 = var0.length;
-
-        for (int var2 = 0; var2 < var1; ++var2) {
-            HttpMethod httpMethod = var0[var2];
-            mappings.put(httpMethod.name(), httpMethod);
+        HttpMethod[] methods = values();
+        for (HttpMethod httpMethod : methods) {
+            MAPPINGS.put(httpMethod.name(), httpMethod);
         }
     }
 }

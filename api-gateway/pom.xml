@@ -13,6 +13,11 @@
     <artifactId>api-gateway</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>api-sdk</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!--公共模块 common-->
         <dependency>
             <groupId>com.example.api</groupId>

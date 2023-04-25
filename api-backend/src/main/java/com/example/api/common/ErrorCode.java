@@ -38,8 +38,12 @@ public enum ErrorCode {
     /**
      * Operation error code.
      */
-    OPERATION_ERROR(50001, "操作失败");
+    OPERATION_ERROR(50001, "操作失败"),
 
+    /**
+     * Remote call error code.
+     */
+    REMOTE_CALL_ERROR(50002, "远程接口调用失败");
     /**
      * 状态码
      */

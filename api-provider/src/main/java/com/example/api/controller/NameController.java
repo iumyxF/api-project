@@ -16,14 +16,14 @@ import javax.servlet.http.HttpServletRequest;
 public class NameController {
 
     @GetMapping("/get")
-    public BaseResponse<String> getName(String name, HttpServletRequest request) {
-        String result = "GET name = " + name;
+    public BaseResponse<String> getName(String username, HttpServletRequest request) {
+        String result = "GET name = " + username;
         return ResultUtils.success(result);
     }
 
     @PostMapping("/post")
-    public BaseResponse<String> postName(@RequestParam String name) {
-        return ResultUtils.success("POST name = " + name);
+    public BaseResponse<String> postName(@RequestBody User user) {
+        return ResultUtils.success("POST name = " + user.getUserName() + " and you id = " + user.getId());
     }
 
     @PostMapping("/enitiy")

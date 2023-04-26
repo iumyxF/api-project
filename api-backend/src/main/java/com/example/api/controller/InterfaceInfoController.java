@@ -204,11 +204,7 @@ public class InterfaceInfoController {
         if (Objects.isNull(interfaceInfo)) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        // TODO 接口是否能调用
-        /*
-        要使用client进行判断 改造成SpringCloud用nacos进行调用，或者拆分项目，用dubbo调用
-        starter 封装redis操作、日志、基本的东西
-         */
+        // TODO 接口是否能调用 不能用ping的方式
 
         //更新接口状态
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
@@ -270,23 +266,22 @@ public class InterfaceInfoController {
         userRequestParams.put("timestamp", System.currentTimeMillis());
         userRequestParams.put("nonce", RandomUtil.randomLong(0, Long.MAX_VALUE));
 
-        //调用接口
-        if (HttpMethod.GET.matches(interfaceInfo.getMethod().toUpperCase())) {
-            //创建凭证对象
-            Credential credential = new Credential(user.getAccessKey(), user.getSecretKey());
-            ApiClient client = new ApiClient(credential);
-            //创建请求体
-            ApiRequest apiRequest = new ApiRequest(interfaceInfo.getMethod(), interfaceInfo.getUrl(), userRequestParams);
-            //调用接口
-            ApiResponse apiResponse = client.sendRequest(apiRequest);
-            if (HttpStatus.OK.value() != apiResponse.getCode()) {
-                return ResultUtils.error(ErrorCode.REMOTE_CALL_ERROR);
-            }
-            return ResultUtils.success(apiResponse.getData());
-        } else {
-            //TODO POST
+        //创建凭证对象
+        Credential credential = new Credential(user.getAccessKey(), user.getSecretKey());
+        ApiClient client = new ApiClient(credential);
+        //解析请求方式
+        HttpMethod resolve = HttpMethod.resolve(interfaceInfo.getMethod().toUpperCase());
+        if (null == resolve) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求方式异常");
         }
-        //调用返回的结果是 BaseResponse 将他转成JSONObject获取其中的data直接返回
-        return null;
+        String requestMethod = resolve.name();
+        //创建请求对象
+        ApiRequest apiRequest = new ApiRequest(requestMethod, interfaceInfo.getUrl(), userRequestParams);
+        //发送请求
+        ApiResponse apiResponse = client.sendRequest(apiRequest);
+        if (null == apiResponse || HttpStatus.OK.value() != apiResponse.getCode()) {
+            return ResultUtils.error(ErrorCode.REMOTE_CALL_ERROR);
+        }
+        return ResultUtils.success(apiResponse.getData());
     }
 }

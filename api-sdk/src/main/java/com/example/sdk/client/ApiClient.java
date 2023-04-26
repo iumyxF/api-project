@@ -1,11 +1,14 @@
 package com.example.sdk.client;
 
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.example.sdk.exception.SdkException;
 import com.example.sdk.model.*;
 import com.example.sdk.utils.SignUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -15,6 +18,8 @@ import java.util.Map;
  * @date 2023/4/19 9:33
  */
 public class ApiClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApiClient.class);
 
     /**
      * 凭证对象
@@ -52,13 +57,29 @@ public class ApiClient {
         }
         interfaceParams.put("accessKey", accessKey);
         interfaceParams.put("secretKey", secretKey);
-        String pathParams = SignUtils.generateGetRequestParams(interfaceParams);
-        String path = request.getUrl() + pathParams;
+
+        //TODO 优化if-else
         if (HttpMethod.GET.matches(method)) {
-            //response 是JSON响应体 这里是同步的
-            String url = GATEWAY_HOST + path;
-            String response = HttpUtil.get(GATEWAY_HOST + path);
-            //请求不存在的网页返回的<html>...如何处理?
+            String pathParams = SignUtils.generateGetRequestParams(interfaceParams);
+            //GET 请求需要将参数拼接在路径后面
+            String path = request.getUrl() + pathParams;
+            String targetUrl = GATEWAY_HOST + path;
+            logger.info("GET 请求目标地址:[{}]", targetUrl);
+            String response = HttpUtil.get(targetUrl);
+            ApiResponse apiResponse;
+            try {
+                apiResponse = JSON.parseObject(response, ApiResponse.class);
+            } catch (Exception e) {
+                //这里捕捉不单是解析异常的问题，还可能是返回错误页面的<html>代码
+                apiResponse = ApiResponse.fail();
+            }
+            return apiResponse;
+        } else if (HttpMethod.POST.matches(method)) {
+            String targetUrl = GATEWAY_HOST + request.getUrl();
+            logger.info("POST 请求目标地址:[{}]", targetUrl);
+            Map<String, Object> requestParams = SignUtils.generatePostRequestParams(interfaceParams);
+            String paramsJson = JSON.toJSONString(requestParams);
+            String response = HttpRequest.post(targetUrl).body(paramsJson).execute().body();
             ApiResponse apiResponse;
             try {
                 apiResponse = JSON.parseObject(response, ApiResponse.class);
@@ -66,9 +87,7 @@ public class ApiClient {
                 apiResponse = ApiResponse.fail();
             }
             return apiResponse;
-        } else {
-            //TODO POST 方式提交
         }
-        return ApiResponse.ok();
+        return ApiResponse.fail(ErrorCode.OPERATION_ERROR);
     }
 }

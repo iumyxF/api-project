@@ -8,6 +8,8 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -98,5 +100,12 @@ public class InterfaceInfoControllerTest {
         // 将属性名和属性值放到Map中
         map.putAll(obj);
         System.out.println(map); // 输出Map
+    }
+
+    @Test
+    public void pingFun() throws IOException {
+        int timeOut = 3000;  //超时应该在3钞以上
+        boolean status = InetAddress.getByName("192.168.2.123").isReachable(timeOut);     // 当返回值是true时，说明host是可用的，false则不可。
+        System.out.println(status);
     }
 }

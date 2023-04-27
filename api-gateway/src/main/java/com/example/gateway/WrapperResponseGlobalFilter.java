@@ -9,12 +9,15 @@ import com.example.api.common.model.entity.User;
 import com.example.api.common.service.InnerInterfaceInfoService;
 import com.example.api.common.service.InnerUserInterfaceInfoService;
 import com.example.api.common.service.InnerUserService;
+import com.example.gateway.constants.CacheConstants;
+import com.example.gateway.utils.RedisCache;
 import com.example.sdk.utils.SignUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -39,6 +42,7 @@ import java.net.URI;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -52,8 +56,17 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
 
     private static final Set<String> WHITE_LIST = Collections.singleton("127.0.0.1");
 
+    /**
+     * nonce默认最大缓存时间（毫秒）
+     */
+    @Value("${api.invoke.max-cache-time}")
+    private Long nonceMaxCacheTime;
+
     @Resource
     private ObjectMapper objectMapper;
+
+    @Resource
+    private RedisCache redisCache;
 
     @DubboReference
     private InnerUserService innerUserService;
@@ -132,14 +145,11 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
         log.info("调用的接口:{}", interfaceInfo);
         log.info("接口调用者:{}", user);
 
-        //校验时间戳
-        if (null == timestamp || Long.parseLong(timestamp) <= 0L) {
+        //校验时间戳 和 nonce
+        if (!ervifyTimestampAndNonceAreLegal(timestamp, nonce)) {
             return handlerNoAuth(originalResponse);
         }
-        //校验nonce todo redis
-        if (null == nonce || Long.parseLong(nonce) <= 0L) {
-            return handlerNoAuth(originalResponse);
-        }
+
         //校验sign参数,去除参数中的sign
         params.put("secretKey", user.getSecretKey());
         params.remove("sign");
@@ -266,6 +276,30 @@ public class WrapperResponseGlobalFilter implements GlobalFilter, Ordered {
             params.putAll(map);
         }
         return params;
+    }
+
+    /**
+     * 校验timestamp和nonce是否合法
+     *
+     * @param timestamp 时间戳
+     * @param nonce     随机数
+     * @return 校验结果
+     */
+    private boolean ervifyTimestampAndNonceAreLegal(String timestamp, String nonce) {
+        if (null == timestamp || Long.parseLong(timestamp) <= 0L) {
+            return false;
+        }
+        if (null == nonce || Long.parseLong(nonce) <= 0L) {
+            return false;
+        }
+        Long lastTimeStamp = redisCache.getCacheObject(CacheConstants.INTERFACE_INVOKE_NONCE_KEY + nonce);
+        //上一次同一个随机数保存时间间隔需要大于nonceMaxCacheTime
+        if (null != lastTimeStamp && Long.sum(nonceMaxCacheTime, Long.parseLong(timestamp)) >= lastTimeStamp) {
+            return false;
+        }
+        //当前nonce 存入redis
+        redisCache.setCacheObject(CacheConstants.INTERFACE_INVOKE_NONCE_KEY + nonce, lastTimeStamp, nonceMaxCacheTime.intValue(), TimeUnit.MILLISECONDS);
+        return true;
     }
 
     @Override

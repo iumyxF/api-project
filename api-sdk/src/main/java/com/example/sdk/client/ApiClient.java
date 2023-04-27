@@ -58,7 +58,6 @@ public class ApiClient {
         interfaceParams.put("accessKey", accessKey);
         interfaceParams.put("secretKey", secretKey);
 
-        //TODO 优化if-else
         if (HttpMethod.GET.matches(method)) {
             String pathParams = SignUtils.generateGetRequestParams(interfaceParams);
             //GET 请求需要将参数拼接在路径后面

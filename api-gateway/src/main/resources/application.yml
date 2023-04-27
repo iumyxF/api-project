@@ -11,6 +11,11 @@ server:
 #          predicates:
 #            - Path=/provider/**
 
+# nonce默认最大缓存时间 300000毫秒 - 5分钟
+api:
+  invoke:
+    max-cache-time: 300000
+
 logging:
   level:
     org:

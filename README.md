@@ -94,3 +94,4 @@ timestamp + nonce
 # 后续可以优化的点
 1. 将GateWay的配置文件交给Nacos管理，实现动态的配置路由
 2. Dubbo中使用IDL定义跨语言服务
+3. 使用热度排序算法展现接口列表

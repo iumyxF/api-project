@@ -22,12 +22,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>2.7.10</spring-boot.version>
         <spring-cloud.version>2021.0.6</spring-cloud.version>
-        <dubbo.version>3.2.0-beta.4</dubbo.version>
+        <dubbo.version>3.2.0</dubbo.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <knife4j.version>3.0.3</knife4j.version>
         <mybatis-plus.version>3.5.3</mybatis-plus.version>
         <hutool.version>5.8.15</hutool.version>
         <junit.version>4.13.1</junit.version>
+        <nacos.version>2.2.0</nacos.version>
     </properties>
 
     <dependencyManagement>
@@ -49,10 +50,11 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-dependencies-zookeeper-curator5</artifactId>
-                <version>${dubbo.version}</version>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-client</artifactId>
+                <version>${nacos.version}</version>
                 <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <!--spring-cloud-dependencies-->
             <dependency>
@@ -61,25 +63,6 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-                <exclusions>
-                    <!--排除zk相关的依赖-->
-                    <exclusion>
-                        <groupId>org.apache.curator</groupId>
-                        <artifactId>curator-recipes</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.curator</groupId>
-                        <artifactId>curator-framework</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.curator</groupId>
-                        <artifactId>curator-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.curator</groupId>
-                        <artifactId>curator-x-discovery</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <!--commons-lang3-->
             <dependency>

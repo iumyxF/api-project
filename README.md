@@ -67,7 +67,9 @@ timestamp + nonce
 
 ## 流程
 
-- 注册中心：zookeeper 下载链接(windows) https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
+- 注册中心
+  - zookeeper 下载链接(windows) https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
+  - nacos 下载链接(windows) https://github.com/alibaba/nacos/releases/tag/2.2.0
 - 服务提供者：api-backend
 - 服务消费者：api-gateway
 
@@ -88,3 +90,7 @@ timestamp + nonce
     - 判断调用是否成功，次数+1
 - api-provider
     - 提供接口数据
+
+# 后续可以优化的点
+1. 将GateWay的配置文件交给Nacos管理，实现动态的配置路由
+2. Dubbo中使用IDL定义跨语言服务

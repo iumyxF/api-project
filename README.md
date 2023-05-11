@@ -25,8 +25,7 @@ sdk 的作用是帮助backend去调用gateway的
 
 ### 防止篡改
 
-参数签名
-签名流程：
+参数签名流程：
 
 1. 按照请求参数名的字母升序排列非空请求参数（包含AccessKey），使用URL键值对的格式（即key1=value1&key2=value2…）拼接成字符串stringA
 2. 在stringA最后拼接上SecretKey得到字符串stringSignTemp
@@ -62,8 +61,9 @@ timestamp + nonce
 
 ## 相关配置
 
-- dubbo version 3.2.0-beta.4
+- dubbo version 3.2.0
 - zookeeper version windows 3.7.1
+- nacos version 2.2.0
 
 ## 流程
 
@@ -94,4 +94,4 @@ timestamp + nonce
 # 后续可以优化的点
 1. 将GateWay的配置文件交给Nacos管理，实现动态的配置路由
 2. Dubbo中使用IDL定义跨语言服务
-3. 使用热度排序算法展现接口列表
+~~3. 使用热度排序算法展现接口列表~~

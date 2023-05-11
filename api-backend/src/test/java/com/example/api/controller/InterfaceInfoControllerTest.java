@@ -95,10 +95,10 @@ public class InterfaceInfoControllerTest {
     public void pareJsonTest() {
         String json = "{\"id\":1001,\"userName\":\"lisi\"}";
         JSONObject obj = JSON.parseObject(json); // 将JSON字符串解析为JSONObject对象
-        Map<String, Object> map = new LinkedHashMap<>(); // 创建一个有序的Map
         // 遍历JSONObject对象的所有属性
         // 将属性名和属性值放到Map中
-        map.putAll(obj);
+        // 创建一个有序的Map
+        Map<String, Object> map = new LinkedHashMap<>(obj);
         System.out.println(map); // 输出Map
     }
 

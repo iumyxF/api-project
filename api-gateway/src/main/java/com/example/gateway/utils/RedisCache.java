@@ -101,7 +101,7 @@ public class RedisCache {
     /**
      * 删除单个对象
      *
-     * @param key
+     * @param key key
      */
     public boolean deleteObject(final String key) {
         return redisTemplate.delete(key);
@@ -111,7 +111,7 @@ public class RedisCache {
      * 删除集合对象
      *
      * @param collection 多个对象
-     * @return
+     * @return 删除结果
      */
     public boolean deleteObject(final Collection collection) {
         return redisTemplate.delete(collection) > 0;
@@ -148,9 +148,8 @@ public class RedisCache {
      */
     public <T> BoundSetOperations<String, T> setCacheSet(final String key, final Set<T> dataSet) {
         BoundSetOperations<String, T> setOperation = redisTemplate.boundSetOps(key);
-        Iterator<T> it = dataSet.iterator();
-        while (it.hasNext()) {
-            setOperation.add(it.next());
+        for (T t : dataSet) {
+            setOperation.add(t);
         }
         return setOperation;
     }
@@ -158,8 +157,8 @@ public class RedisCache {
     /**
      * 获得缓存的set
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return value
      */
     public <T> Set<T> getCacheSet(final String key) {
         return redisTemplate.opsForSet().members(key);
@@ -168,8 +167,8 @@ public class RedisCache {
     /**
      * 缓存Map
      *
-     * @param key
-     * @param dataMap
+     * @param key key
+     * @param dataMap value
      */
     public <T> void setCacheMap(final String key, final Map<String, T> dataMap) {
         if (dataMap != null) {
@@ -180,8 +179,8 @@ public class RedisCache {
     /**
      * 获得缓存的Map
      *
-     * @param key
-     * @return
+     * @param key key
+     * @return value
      */
     public <T> Map<String, T> getCacheMap(final String key) {
         return redisTemplate.opsForHash().entries(key);

@@ -100,4 +100,26 @@ public enum ValidateParamType {
 
     public abstract boolean isLegal(JSONObject userObject, String paramName);
 
+    /**
+     * 校验当前类型是否是字符类型
+     *
+     * @param typeName 类型名称
+     * @return 结果
+     */
+    public static boolean isCharacterType(String typeName) {
+        String type = typeName.toUpperCase();
+        return STRING.name().equals(type) || CHAR.name().equals(type);
+    }
+
+    /**
+     * 校验当前类型是否是数值类型
+     *
+     * @param typeName 类型名称
+     * @return 结果
+     */
+    public static boolean isNumberType(String typeName) {
+        String type = typeName.toUpperCase();
+        return BYTE.name().equals(type) || SHORT.name().equals(type) || INT.name().equals(type) || FLOAT.name().equals(type) || DOUBLE.name().equals(type) || LONG.name().equals(type);
+    }
+
 }

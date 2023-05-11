@@ -32,7 +32,7 @@ public enum HttpMethod {
      */
     DELETE;
 
-    private static final Map<String, HttpMethod> MAPPINGS = new HashMap(4);
+    private static final Map<String, HttpMethod> MAPPINGS = new HashMap<>(4);
 
     HttpMethod() {
     }

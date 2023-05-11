@@ -22,7 +22,7 @@ public class SignUtils {
 
     /**
      * 生成GET请求参数
-     * eg: " http://localshot:8080/interface/invoke?k1=v1&k2=v2 "
+     * eg: "localhost:8080/interface/invoke?k1=v1&k2=v2"
      * 目标字符串：?k1=v1&k2=v2....
      *
      * @param params 用户参数

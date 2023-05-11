@@ -193,7 +193,7 @@ public class InterfaceInfoController {
      * @param updateStatusRequest 状态更新请求体
      */
     @PostMapping("/online")
-    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody UpdateStatusRequest updateStatusRequest) {
+    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody UpdateStatusRequest updateStatusRequest,HttpServletRequest request) {
         //参数判断
         if (Objects.isNull(updateStatusRequest) || updateStatusRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -204,8 +204,9 @@ public class InterfaceInfoController {
         if (Objects.isNull(interfaceInfo)) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        // TODO 接口是否能调用 不能用ping的方式
-
+        //判断接口能否正常调用
+        User loginUser = userService.getLoginUser(request);
+        interfaceInfoService.verifyInterfaceIsAvailable(interfaceInfo,loginUser);
         //更新接口状态
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
         boolean result = interfaceInfoService.updateById(interfaceInfo);

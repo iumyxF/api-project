@@ -40,6 +40,4 @@ public class InterfaceInfoUtils {
         }
         return res;
     }
-
-
 }

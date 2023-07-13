@@ -1,4 +1,4 @@
-package com.example.api.controller;
+package com.example.api.other;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.crypto.SecureUtil;

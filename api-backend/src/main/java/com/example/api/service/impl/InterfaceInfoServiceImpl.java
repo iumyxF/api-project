@@ -3,10 +3,10 @@ package com.example.api.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.api.common.ErrorCode;
 import com.example.api.common.InterfaceInfoUtils;
+import com.example.api.common.JsonTypeUtils;
 import com.example.api.common.model.entity.InterfaceInfo;
 import com.example.api.common.model.entity.User;
 import com.example.api.common.model.entity.UserInterfaceInfo;
@@ -15,7 +15,6 @@ import com.example.api.exception.BusinessException;
 import com.example.api.mapper.InterfaceInfoMapper;
 import com.example.api.mapper.UserInterfaceInfoMapper;
 import com.example.api.model.bo.interfaceinfo.InterfaceInfoRequestParamBo;
-import com.example.api.model.enums.ValidateParamType;
 import com.example.api.service.InterfaceInfoService;
 import com.example.sdk.client.ApiClient;
 import com.example.sdk.model.ApiRequest;
@@ -73,10 +72,10 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
 
     @Override
     public InterfaceInfo selectInterfaceInfoByUrlAndMethod(String url, String method) {
-        LambdaQueryWrapper<InterfaceInfo> wrapper = new LambdaQueryWrapper<InterfaceInfo>()
-                .eq(InterfaceInfo::getUrl, url)
-                .eq(InterfaceInfo::getMethod, method);
-        return interfaceInfoMapper.selectOne(wrapper);
+        if (StringUtils.isAnyBlank(url, method)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return interfaceInfoMapper.selectByUrlAndMethod(url, method);
     }
 
     /**
@@ -89,6 +88,10 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
      */
     @Override
     public Map<String, Object> validAndGetRequestParams(String userRequestParams, String interfaceInfoRequestParams) {
+        //检验参数是否为JSON格式
+        if (!JSON.isValid(userRequestParams) || !JSON.isValid(interfaceInfoRequestParams)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "解析的参数不符合JSON格式");
+        }
         HashMap<String, Object> resultParams = new HashMap<>(16);
         //模板JSON
         JSONArray templateArray = JSON.parseArray(interfaceInfoRequestParams);
@@ -108,7 +111,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "必填参数缺失");
             }
             //参数类型是否合法
-            boolean isLegal = ValidateParamType.valueOf(type.toUpperCase()).isLegal(userObject, name);
+            boolean isLegal = JsonTypeUtils.isValueOfType(userObject, type, name);
             if (!isLegal) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数类型不正确");
             }
@@ -130,7 +133,6 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
     @Override
     public void verifyInterfaceIsAvailable(InterfaceInfo interfaceInfo, User loginUser) {
         //校验 调用 看能否正常返回数据
-        //调用需要有调用次数
 
         //TODO 这里是否要改造成管理员能访问所有接口呢？
         //新增当前管理员对该接口调用次数

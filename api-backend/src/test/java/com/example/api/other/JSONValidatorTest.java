@@ -1,4 +1,4 @@
-package com.example.api.controller;
+package com.example.api.other;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

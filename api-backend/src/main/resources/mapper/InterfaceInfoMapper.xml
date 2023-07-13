@@ -26,4 +26,12 @@
         method,status,userId,
         isDelete,createTime,updateTime
     </sql>
+
+    <select id="selectByUrlAndMethod" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from interface_info
+        where `url` =#{url}
+        and `method` = #{method}
+    </select>
 </mapper>
